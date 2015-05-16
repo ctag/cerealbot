@@ -6,13 +6,19 @@
 APIKEY=$1
 FILE=$2
 
-echo "Key: ${APIKEY}"
-echo "File: ${FILE}"
+#echo "Key: ${APIKEY}"
+#echo "File: ${FILE}"
 
 FILE=`echo "${FILE}" | grep -Eo '[[:alnum:]_]+\.gcode\>'` 
 
-MSG="[${FILE}] has finished processing, it is available for review in the fabrication lab."
+MSG="[${FILE}] has finished processing. Send someone expendable to retrieve it, ctag perhaps?"
+
+if [ "$FILE" != "cycle_hotbed.gcode" ]
+then
 
 curl --data "{\"message\":\"${MSG}\", \"channel\":\"##rqtest\", \"isaction\":false, \"key\":\"${APIKEY}\"}" https://crump.space/rq/relay -H "Content-Type:application/json"
+
+fi
+
 
 
