@@ -1,0 +1,28 @@
+
+
+
+
+
+
+
+
+	
+
+
+
+.build/atmega328/Servo/Servo.d : /usr/share/arduino/libraries/Servo/Servo.cpp
+	@mkdir -p .build/atmega328/Servo
+	@/usr/bin/avr-gcc -mmcu=atmega328p -DF_CPU=16000000L -DARDUINO=101 -I/usr/share/arduino/hardware/arduino/cores/arduino -ffunction-sections -fdata-sections -g -Os -w -I/usr/share/arduino/hardware/arduino/variants/standard -I/usr/share/arduino/hardware/arduino/cores/arduino -I/usr/share/arduino/libraries/Stepper -I/usr/share/arduino/libraries/SoftwareSerial -I/usr/share/arduino/libraries/LiquidCrystal -I/usr/share/arduino/libraries/Servo -I/usr/share/arduino/libraries/Wire -I/usr/share/arduino/libraries/Wire/utility -I/usr/share/arduino/libraries/EEPROM -I/usr/share/arduino/libraries/SPI -I/usr/share/arduino/libraries/SD -I/usr/share/arduino/libraries/SD/utility -I/usr/share/arduino/libraries/Ethernet -I/usr/share/arduino/libraries/Ethernet/utility -I/usr/share/arduino/libraries/Firmata  -MM $^ > $@
+	
+	@printf ".build/atmega328/Servo/Servo.d .build/atmega328/Servo/" | cat - $@ > $@~ && mv $@~ $@
+
+
+
+.build/atmega328/Servo/dependencies.d : .build/atmega328/Servo/Servo.d
+	@echo [96mScanning dependencies of Servo[0m
+	@mkdir -p .build/atmega328/Servo
+	@cat $^ > $@;
+
+all : .build/atmega328/Servo/dependencies.d
+	@true
+

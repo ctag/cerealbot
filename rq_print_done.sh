@@ -11,14 +11,16 @@ FILE=$2
 
 FILE=`echo "${FILE}" | grep -Eo '[[:alnum:]_]+\.gcode\>'` 
 
-MSG="[${FILE}] has finished processing. Send someone expendable to retrieve it, ctag perhaps?"
-
-if [ "$FILE" != "cycle_hotbed.gcode" ]
+MSG="No Status."
+if [ "$FILE" = "cycle_hotbed.gcode" ]
 then
+MSG="End Specilized hotbed code, fan should be off"
+#echo f > /dev/ttyUSB0
+else
+MSG="[${FILE}] has finished processing. Send someone expendable to retrieve it, ctag perhaps?"
+fi
 
 curl --data "{\"message\":\"${MSG}\", \"channel\":\"##rqtest\", \"isaction\":false, \"key\":\"${APIKEY}\"}" https://crump.space/rq/relay -H "Content-Type:application/json"
-
-fi
 
 
 
