@@ -1,0 +1,14 @@
+
+
+
+
+
+.build/atmega328/src/printr_avr.cpp : src/printr_avr.ino
+	@mkdir -p .build/atmega328/src
+	@echo [93msrc/printr_avr.ino[0m
+	@/usr/local/bin/ino preproc  -o $@ $^
+
+
+all : .build/atmega328/src/printr_avr.cpp
+	@true
+
