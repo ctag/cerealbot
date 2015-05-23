@@ -2,14 +2,20 @@
 
 /**
  * Cereally 3D Arduino
- * Christopher Bero - 2015
+ * Christopher [ctag] Bero - bigbero@gmail.com
  */
+
+/**
+ * Definitions
+ */
+#DEFINE BUF_LEN 3
 
 /**
  * Global Variables
  */
-char in_buffer = '\0';
-char in_text[] = "000";
+char in_char = '\0';
+char in_buffer[BUF_LEN] = "000";
+unsigned short int buffer_index = 0;
 Servo servoPopbar;
 Servo servoSweeper;
 unsigned int popbarUp = 170;
@@ -25,7 +31,7 @@ short fanPin = 3;
 short popbarPin = 9;
 short sweeperPin = 10;
 short resetPin = 11;
-
+short powerLedPin = 13;
 
 void setup()
 {
@@ -34,6 +40,9 @@ void setup()
 	
 	pinMode(fanPin, OUTPUT);
 	digitalWrite(fanPin, LOW);
+	
+	pinMode(powerLedPin, OUTPUT);
+	digitalWrite(powerLedPin, LOW);
 	
 	pinMode(A0, INPUT);
 	
@@ -69,33 +78,57 @@ void down_servo ()
 	servoPopbar.write(popbarMiddle);
 }
 
+void reset_buffer ()
+{
+	buffer_index = 0;
+	for (buffer_index = 0; buffer_index < BUF_LEN; ++buffer_index)
+	{
+		in_buffer[buffer_index] = ' ';
+	}
+	buffer_index = 0;
+}
+
+void process_buffer()
+{
+	if (in_buffer == ":fo")
+	{
+		Serial.println("Turning fan on.");
+	}
+	reset_buffer();
+}
+
 void loop()
 {
 	if (Serial.available())
 	{
-		in_buffer = Serial.read();
+		digitalWrite(powerLedPin, HIGH);
 		
-		Serial.print("Recieved: ");
-		Serial.println(in_buffer);
+		in_char = Serial.read();
 		
-		if (in_buffer == 'r')
+		Serial.print("Recieved [");
+		Serial.print(in_char);
+		Serial.println("]");
+		
+		if (in_char == ' ' || in_char == '.' || in_char == '\n' || in_char == '\0') 
 		{
-			Serial.println("resetting printer!");
-			reset_printer();
+			reset_buffer();
 		}
-		else if (in_buffer == 'u')
+		else if (buffer_index < BUF_LEN)
 		{
-			Serial.println("pushing servo up!");
-			up_servo();
+			in_buffer[buffer_index] = in_char;
+			++buffer_index;
+			if (buffer_index == BUF_LEN)
+			{
+				process_buffer();
+			}
 		}
-		else if (in_buffer == 'd') {
-			Serial.println("pushing servo down!");
-			down_servo();
+		else 
+		{
+			reset_buffer();
 		}
-		else if (in_buffer == 'f') {
-			digitalWrite(fanPin, !digitalRead(fanPin));
-		}
-		in_buffer = '\0';
+		in_char = '\0';
+		
+		digitalWrite(powerLedPin, LOW);
 	}
 }
 
