@@ -90,6 +90,7 @@ void reset_buffer ()
 
 void process_buffer()
 {
+	Serial.println("Clearing input buffer.");
 	if (in_buffer == ":fo")
 	{
 		Serial.println("Turning fan on.");
