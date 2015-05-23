@@ -80,6 +80,7 @@ void down_servo ()
 
 void reset_buffer ()
 {
+	Serial.println("Clearing input buffer.");
 	buffer_index = 0;
 	for (buffer_index = 0; buffer_index < BUF_LEN; ++buffer_index)
 	{
@@ -90,7 +91,6 @@ void reset_buffer ()
 
 void process_buffer()
 {
-	Serial.println("Clearing input buffer.");
 	if (in_buffer == ":fo")
 	{
 		Serial.println("Turning fan on.");
