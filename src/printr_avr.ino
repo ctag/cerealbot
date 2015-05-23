@@ -84,14 +84,15 @@ void reset_buffer ()
 	buffer_index = 0;
 	for (buffer_index = 0; buffer_index < BUF_LEN; ++buffer_index)
 	{
-		in_buffer[buffer_index] = ' ';
+		in_buffer[buffer_index] = '\0';
 	}
 	buffer_index = 0;
 }
 
 void process_buffer()
 {
-	if (in_buffer == ":fo")
+	Serial.println("Processing input buffer.");
+	if (strcmp(in_buffer, ":fo") == 0)
 	{
 		Serial.println("Turning fan on.");
 	}
