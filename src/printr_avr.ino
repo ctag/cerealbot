@@ -8,7 +8,7 @@
 /**
  * Definitions
  */
-#DEFINE BUF_LEN 3
+const int BUF_LEN = 3;
 
 /**
  * Global Variables
