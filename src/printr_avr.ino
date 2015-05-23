@@ -8,13 +8,13 @@
 /**
  * Definitions
  */
-const int BUF_LEN = 4;
+const int BUF_LEN = 3;
 
 /**
  * Global Variables
  */
 char in_char = '\0';
-char in_buffer[BUF_LEN] = "000";
+char in_buffer[BUF_LEN+1] = "000";
 unsigned short int buffer_index = 0;
 Servo servoPopbar;
 Servo servoSweeper;
