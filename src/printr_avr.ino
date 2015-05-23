@@ -92,9 +92,15 @@ void reset_buffer ()
 void process_buffer()
 {
 	Serial.println("Processing input buffer.");
-	if (strcmp(in_buffer, ":fo") == 0)
+	if (strcmp(in_buffer, ":fi") == 0)
 	{
-		Serial.println("Turning fan on.");
+		Serial.println("Turning fan ON.");
+		digitalWrite(fanPin, HIGH);
+	}
+	else if (strcmp(in_buffer, ":fo") == 0)
+	{
+		Serial.println("Turning fan OFF.");
+		digitalWrite(fanPin, LOW);
 	}
 	reset_buffer();
 }
