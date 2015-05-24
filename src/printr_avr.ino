@@ -42,7 +42,7 @@ void setup()
 	digitalWrite(fanPin, LOW);
 	
 	pinMode(powerLedPin, OUTPUT);
-	digitalWrite(powerLedPin, LOW);
+	digitalWrite(powerLedPin, HIGH);
 	
 	pinMode(A0, INPUT);
 	
