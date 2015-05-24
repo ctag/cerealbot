@@ -95,15 +95,16 @@ void process_buffer()
 	if (strcmp(in_buffer, ":fi") == 0)
 	{
 		Serial.println("Turning fan ON.");
-		digitalWrite(fanPin, HIGH);
+		digitalWrite(fanPin, LOW);
 	}
 	else if (strcmp(in_buffer, ":fo") == 0)
 	{
 		Serial.println("Turning fan OFF.");
-		digitalWrite(fanPin, LOW);
+		digitalWrite(fanPin, HIGH);
 	}
 	else
 	{
+		Serial.println("Checking for servo command.");
 		char tmp_val[3];
 		tmp_val[0] = in_buffer[1];
 		tmp_val[1] = in_buffer[2];
