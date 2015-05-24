@@ -28,7 +28,7 @@ unsigned int sweeperAction = 70;
  * Pin Mappings
  */
 short fanPin = 3;
-short popbarPin = 8;
+short popbarPin = 9;
 short sweeperPin = 10;
 short resetPin = 11;
 short powerLedPin = 13;
