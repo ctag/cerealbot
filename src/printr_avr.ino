@@ -108,6 +108,7 @@ void process_buffer()
 		tmp_val[0] = in_buffer[1];
 		tmp_val[1] = in_buffer[2];
 		int servo_val = atoi(tmp_val);
+		servo_val = servo_val * 10;
 		servoPopbar.write(servo_val);
 	}
 	reset_buffer();
