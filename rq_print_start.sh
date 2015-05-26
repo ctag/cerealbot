@@ -14,11 +14,11 @@ FILE=`echo "${FILE}" | grep -Eo '[[:alnum:]_]+\.gcode\>'`
 MSG="No Status."
 if [ "$FILE" = "cycle_hotbed.gcode" ]
 then
-MSG="Begin specilized task for cycling the hotbed."
+MSG="Begin task for removing adhered part from heated build platform."
 exec /home/pi/cerealbox/cycle_fan.sh &
-#echo f > /dev/ttyUSB0
 else
-MSG="Be aware, [${FILE}] replication has initiated."
+echo -n ..:fo >> /dev/ttyUSB0
+MSG="Be aware, [${FILE}] replication has initiated. Coolant deactivated."
 fi
 
 curl --data "{\"message\":\"${MSG}\", \"channel\":\"##rqtest\", \"isaction\":false, \"key\":\"${APIKEY}\"}" https://crump.space/rq/relay -H "Content-Type:application/json"
