@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # This script will check the status of a print
-# and have ReqQueen alert me when a print is done.
+# and have RedQueen alert me when a print is done.
 
 APIKEY=$1
 FILE=$2
@@ -11,7 +11,7 @@ FILE=$2
 
 FILE=`echo "${FILE}" | grep -Eo '[[:alnum:]_]+\.gcode\>'` 
 
-MSG="No Status."
+MSG="No Status. Something has broken the CerealBot."
 if [ "$FILE" = "cycle_hotbed.gcode" ]
 then
 MSG="End Specilized hotbed code."
