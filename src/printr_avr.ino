@@ -8,7 +8,7 @@
 /**
  * Definitions
  */
-const int BUF_LEN = 3;
+const int BUF_LEN = 4;
 
 /**
  * Global Variables
@@ -91,18 +91,20 @@ void reset_buffer ()
 
 void process_buffer()
 {
-	Serial.println("Processing input buffer.");
+	Serial.print("Processing input buffer: ");
 	if (strcmp(in_buffer, ":fi") == 0)
 	{
 		Serial.println("Turning fan ON.");
 		digitalWrite(fanPin, HIGH);
+		reset_buffer();
 	}
 	else if (strcmp(in_buffer, ":fo") == 0)
 	{
 		Serial.println("Turning fan OFF.");
 		digitalWrite(fanPin, LOW);
+		reset_buffer();
 	}
-	reset_buffer();
+	Serial.println("No action taken.");
 }
 
 void loop()
@@ -113,11 +115,11 @@ void loop()
 		
 		in_char = Serial.read();
 		
-		Serial.print("Recieved [");
-		Serial.print(in_char);
-		Serial.println("]");
+		//Serial.print("Recieved [");
+		Serial.println(in_char);
+		//Serial.println("]");
 		
-		if (in_char == ' ' || in_char == '.' || in_char == '\n' || in_char == '\0') 
+		if (in_char == '.' || in_char == '\n' || in_char == '\0') 
 		{
 			reset_buffer();
 		}
@@ -125,10 +127,7 @@ void loop()
 		{
 			in_buffer[buffer_index] = in_char;
 			++buffer_index;
-			if (buffer_index == BUF_LEN)
-			{
-				process_buffer();
-			}
+			process_buffer();
 		}
 		else 
 		{
