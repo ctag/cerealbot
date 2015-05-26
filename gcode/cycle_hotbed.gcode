@@ -7,15 +7,25 @@
 M140 S80.000000 ; Set hotbed to 80C, should only ever reach ~65C
 
 ; Wait for 20 minutes
-G4 P120000 ; two minutes
-G4 P120000 ; two minutes
-G4 P120000 ; two minutes
-G4 P120000 ; two minutes
-G4 P120000 ; two minutes
-G4 P120000 ; two minutes
-G4 P120000 ; two minutes
-G4 P120000 ; two minutes
-G4 P120000 ; two minutes
-G4 P120000 ; two minutes
+G4 P60000 ; one minute
+G4 P60000 ; one minute
+G4 P60000 ; one minute
+G4 P60000 ; one minute
+G4 P60000 ; one minute
+G4 P60000 ; one minute
+G4 P60000 ; one minute
+G4 P60000 ; one minute
+G4 P60000 ; one minute
+G4 P60000 ; one minute
+G4 P60000 ; one minute
+G4 P60000 ; one minute
+G4 P60000 ; one minute
+G4 P60000 ; one minute
+G4 P60000 ; one minute
+G4 P60000 ; one minute
+G4 P60000 ; one minute
+G4 P60000 ; one minute
+G4 P60000 ; one minute
+G4 P60000 ; one minute
 
 M140 S0.000000 ; Turn off hotbed
