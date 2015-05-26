@@ -8,7 +8,7 @@
 /**
  * Definitions
  */
-const int BUF_LEN = 4;
+const unsigned short int BUF_LEN = 5;
 
 /**
  * Global Variables
@@ -104,12 +104,13 @@ void process_buffer()
 		digitalWrite(fanPin, HIGH);
 		reset_buffer();
 	}
-	else if (strcmp(substring(in_buffer,1,2), ":s") == 0)
+	else if (strstr(in_buffer, ":s") != NULL)
 	{
 		Serial.println("Checking for servo command.");
 		char tmp_val[3];
-		tmp_val[0] = in_buffer[1];
-		tmp_val[1] = in_buffer[2];
+		tmp_val[0] = in_buffer[2];
+		tmp_val[1] = in_buffer[3];
+		tmp_val[2] = in_buffer[4];
 		int servo_val = atoi(tmp_val);
 		servo_val = servo_val * 10;
 		Serial.print("Servo val: ");
@@ -143,6 +144,10 @@ void loop()
 		}
 		else if (buffer_index < BUF_LEN)
 		{
+			if (in_char == ':')
+			{
+				buffer_index = 0;
+			}
 			in_buffer[buffer_index] = in_char;
 			++buffer_index;
 			process_buffer();
