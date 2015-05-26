@@ -43,7 +43,8 @@ echo "`date`: Printer looks good, proceeding to loosen part" >> $LOG
 # Run the hotbed code
 #curl -H "X-Api-Key: $api_key" -F select=true -F print=false -F file=@$f http://beaglebone.local:5000/api/files/local
 API_HOTBED=`curl -H "X-Api-Key: $OCTO_API_KEY" -F select=true -F print=true -F file=@gcode/cycle_hotbed.gcode  http://localhost:8081/api/files/local -o /tmp/printr_upload.json`
+exec cycle_fan.sh &
 sleep 45m
 API_HOTBED=`curl -H "X-Api-Key: $OCTO_API_KEY" -F select=true -F print=true -F file=@gcode/cycle_hotbed.gcode  http://localhost:8081/api/files/local -o /tmp/printr_upload.json`
-
+exec cycle_fan.sh &
 
