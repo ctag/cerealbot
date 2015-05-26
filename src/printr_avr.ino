@@ -112,7 +112,7 @@ void process_buffer()
 		tmp_val[1] = in_buffer[3];
 		tmp_val[2] = in_buffer[4];
 		int servo_val = atoi(tmp_val);
-		servo_val = servo_val * 10;
+		//servo_val = servo_val * 10;
 		Serial.print("Servo val: ");
 		Serial.println(servo_val);
 		if (servo_val >= 0 && servo_val <= 180)
