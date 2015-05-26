@@ -6,6 +6,21 @@
  */
 
 /**
+ * Working Commands
+ * :f - FAN
+ * :fo - Fan OFF
+ * :fi - Fan ON
+ *
+ * :s - SERVO
+ * :sNNN - Set servo to NNN degrees
+ */
+ 
+/**
+ * TODO
+ * - Set up fan and servo status reporting
+ */
+
+/**
  * Definitions
  */
 const unsigned short int BUF_LEN = 5;
@@ -33,6 +48,11 @@ short sweeperPin = 10;
 short resetPin = 11;
 short powerLedPin = 13;
 
+/**
+ * Function prototypes
+ */
+void reset_buffer ();
+
 void setup()
 {
 	pinMode(resetPin, OUTPUT);
@@ -53,6 +73,10 @@ void setup()
 	
 	servoSweeper.attach(sweeperPin);
 	servoSweeper.write(sweeperStored);
+	
+	delay(50);
+	
+	reset_buffer();
 	
 	delay(50);
 }
@@ -80,7 +104,7 @@ void down_servo ()
 
 void reset_buffer ()
 {
-	Serial.println("Clearing input buffer.");
+	Serial.println(" Clearing input buffer.");
 	buffer_index = 0;
 	for (buffer_index = 0; buffer_index < BUF_LEN; ++buffer_index)
 	{
@@ -91,7 +115,7 @@ void reset_buffer ()
 
 void process_buffer()
 {
-	Serial.print("Processing input buffer: ");
+	//Serial.print(" Processing input buffer: ");
 	if (strcmp(in_buffer, ":fi") == 0)
 	{
 		Serial.println("Turning fan ON.");
@@ -112,7 +136,6 @@ void process_buffer()
 		tmp_val[1] = in_buffer[3];
 		tmp_val[2] = in_buffer[4];
 		int servo_val = atoi(tmp_val);
-		//servo_val = servo_val * 10;
 		Serial.print("Servo val: ");
 		Serial.println(servo_val);
 		if (servo_val >= 0 && servo_val <= 180)
@@ -123,7 +146,7 @@ void process_buffer()
 		reset_buffer();
 	}
 	else {
-		Serial.println("No action taken.");
+		//Serial.println("No action taken.");
 	}
 }
 
@@ -136,7 +159,7 @@ void loop()
 		in_char = Serial.read();
 		
 		//Serial.print("Recieved [");
-		Serial.println(in_char);
+		Serial.print(in_char);
 		//Serial.println("]");
 		
 		if (in_char == '.' || in_char == '\n' || in_char == '\0') 
