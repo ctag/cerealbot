@@ -1,6 +1,7 @@
 #!/bin/bash
 
+echo -n ..:fo >> /dev/ttyUSB0
 sleep 10m
-echo -n f >> /dev/ttyUSB0
+echo -n ..:fi >> /dev/ttyUSB0
 sleep 30m
-echo -n f >> /dev/ttyUSB0
+echo -n ..:fo >> /dev/ttyUSB0

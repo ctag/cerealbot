@@ -42,7 +42,7 @@ void setup()
 	digitalWrite(fanPin, LOW);
 	
 	pinMode(powerLedPin, OUTPUT);
-	digitalWrite(powerLedPin, LOW);
+	digitalWrite(powerLedPin, HIGH);
 	
 	pinMode(A0, INPUT);
 	
@@ -95,16 +95,34 @@ void process_buffer()
 	if (strcmp(in_buffer, ":fi") == 0)
 	{
 		Serial.println("Turning fan ON.");
-		digitalWrite(fanPin, HIGH);
+		digitalWrite(fanPin, LOW);
 		reset_buffer();
 	}
 	else if (strcmp(in_buffer, ":fo") == 0)
 	{
 		Serial.println("Turning fan OFF.");
-		digitalWrite(fanPin, LOW);
+		digitalWrite(fanPin, HIGH);
 		reset_buffer();
 	}
-	Serial.println("No action taken.");
+	else if (strcmp(substring(in_buffer,1,2), ":s") == 0)
+	{
+		Serial.println("Checking for servo command.");
+		char tmp_val[3];
+		tmp_val[0] = in_buffer[1];
+		tmp_val[1] = in_buffer[2];
+		int servo_val = atoi(tmp_val);
+		servo_val = servo_val * 10;
+		Serial.print("Servo val: ");
+		Serial.println(servo_val);
+		if (servo_val >= 0 && servo_val <= 180)
+		{
+			Serial.println("Sending to servo.");
+			servoPopbar.write(servo_val);
+		}
+	}
+	else {
+		Serial.println("No action taken.");
+	}
 }
 
 void loop()
