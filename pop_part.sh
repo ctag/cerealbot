@@ -17,6 +17,10 @@ echo "`date`: Begin pop_part.sh" >> $LOG
 
 # Fetch Printer Status
 PRINTR_STATUS=`curl -H "X-Api-Key:$OCTO_API_KEY" http://localhost:8081/api/printer -o /tmp/printr_status.json`
+if [ $? -ne 0 ]; then
+echo "`date`: curl failed, exiting." >> $LOG
+exit
+fi
 
 # Verify printer is ready to pop the part
 
@@ -48,13 +52,14 @@ echo "`date`: Printer looks good, proceeding to loosen part" >> $LOG
 #curl -H "X-Api-Key: $api_key" -F select=true -F print=false -F file=@$f http://beaglebone.local:5000/api/files/local
 #API_HOTBED=`curl -H "X-Api-Key: $OCTO_API_KEY" -F select=true -F print=true -F file=@gcode/cycle_hotbed.gcode  http://localhost:8081/api/files/local -o /tmp/printr_upload.json`
 POST /printer/command '{"command":"M140 S70"}'
-sleep 10m
+sleep 1m
 /bin/bash fanctl.sh on
-sleep 10m
+sleep 1m
 POST /printer/command '{"command":"M140 S0"}'
-sleep 10m
+sleep 1m
 /bin/bash fanctl.sh off
-sleep 5m
+sleep 1m
+echo "`date`: Done with cycle 1." >> $LOG
 
 exit
 
