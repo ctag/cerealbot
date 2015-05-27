@@ -48,24 +48,19 @@ fi
 
 echo "`date`: Printer looks good, proceeding to loosen part" >> $LOG
 
+function cycle_hotbed {
 # Run the hotbed code
 #curl -H "X-Api-Key: $api_key" -F select=true -F print=false -F file=@$f http://beaglebone.local:5000/api/files/local
 #API_HOTBED=`curl -H "X-Api-Key: $OCTO_API_KEY" -F select=true -F print=true -F file=@gcode/cycle_hotbed.gcode  http://localhost:8081/api/files/local -o /tmp/printr_upload.json`
 POST /printer/command '{"command":"M140 S70"}'
-sleep 1m
+sleep 5m
 /bin/bash fanctl.sh on
-sleep 1m
-POST /printer/command '{"command":"M140 S0"}'
-sleep 1m
-/bin/bash fanctl.sh off
-sleep 1m
-echo "`date`: Done with cycle 1." >> $LOG
-
-exit
-
-API_HOTBED=`curl -H "X-Api-Key: $OCTO_API_KEY" -F select=true -F print=true -F file=@gcode/cycle_hotbed.gcode  http://localhost:8081/api/files/local -o /tmp/printr_upload.json`
 sleep 10m
-/bin/bash fanctl.sh on
-sleep 20m
+POST /printer/command '{"command":"M140 S0"}'
+sleep 10m
 /bin/bash fanctl.sh off
+sleep 5m
+echo "`date`: Done with cycle." >> $LOG
+}
 
+cycle_hotbed
