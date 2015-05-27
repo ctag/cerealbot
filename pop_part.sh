@@ -7,6 +7,10 @@
 # Christopher Bero [bigbero@gmail.com]
 #
 
+# Initiate resty
+. resty
+resty http://localhost:8081/api
+
 # Setup log file
 LOG=/tmp/pop_part.log
 echo "`date`: Begin pop_part.sh" >> $LOG
@@ -42,9 +46,21 @@ echo "`date`: Printer looks good, proceeding to loosen part" >> $LOG
 
 # Run the hotbed code
 #curl -H "X-Api-Key: $api_key" -F select=true -F print=false -F file=@$f http://beaglebone.local:5000/api/files/local
+#API_HOTBED=`curl -H "X-Api-Key: $OCTO_API_KEY" -F select=true -F print=true -F file=@gcode/cycle_hotbed.gcode  http://localhost:8081/api/files/local -o /tmp/printr_upload.json`
+POST /printer/command '{"command":"M140 S70"}'
+sleep 10m
+/bin/bash fanctl.sh on
+sleep 10m
+POST /printer/command '{"command":"M140 S0"}'
+sleep 10m
+/bin/bash fanctl.sh off
+sleep 5m
+
+exit
+
 API_HOTBED=`curl -H "X-Api-Key: $OCTO_API_KEY" -F select=true -F print=true -F file=@gcode/cycle_hotbed.gcode  http://localhost:8081/api/files/local -o /tmp/printr_upload.json`
-exec cycle_fan.sh &
-sleep 45m
-API_HOTBED=`curl -H "X-Api-Key: $OCTO_API_KEY" -F select=true -F print=true -F file=@gcode/cycle_hotbed.gcode  http://localhost:8081/api/files/local -o /tmp/printr_upload.json`
-exec cycle_fan.sh &
+sleep 10m
+/bin/bash fanctl.sh on
+sleep 20m
+/bin/bash fanctl.sh off
 
