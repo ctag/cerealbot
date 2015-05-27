@@ -66,10 +66,10 @@ echo "`date`: Done with cycle." >> $LOG
 
 }
 
-#cycle_hotbed
-#cycle_hotbed
-#cycle_hotbed
-#cycle_hotbed
+cycle_hotbed
+cycle_hotbed
+cycle_hotbed
+cycle_hotbed
 
 resty https://crump.space/rq
 
