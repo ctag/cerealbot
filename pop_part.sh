@@ -66,15 +66,12 @@ echo "`date`: Done with cycle." >> $LOG
 
 }
 
+. rq_msg.sh "Activating automatic part adherence mitigation. Please stand clear."
+
 cycle_hotbed
 cycle_hotbed
 cycle_hotbed
 cycle_hotbed
 
-resty https://crump.space/rq
-
-MSG="Finished automatic buildplate cycling. RQ API via resty."
-
-#curl --data "{\"message\":\"${MSG}\", \"channel\":\"##rqtest\", \"isaction\":false, \"key\":\"${APIKEY}\"}" https://crump.space/rq/relay -H "Content-Type:application/json"
-POST /relay "{\"message\":\"${MSG}\", \"channel\":\"##rqtest\", \"isaction\":false, \"key\":\"12345\"}"
+. rq_msg.sh "Finished automatic buildplate cycling. Part is prepared for collection."
 
