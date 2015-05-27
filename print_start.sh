@@ -21,6 +21,5 @@ echo -n ..:fo >> /dev/ttyUSB0
 MSG="Be aware, [${FILE}] replication has initiated. Coolant deactivated."
 fi
 
-curl --data "{\"message\":\"${MSG}\", \"channel\":\"##rqtest\", \"isaction\":false, \"key\":\"${APIKEY}\"}" https://crump.space/rq/relay -H "Content-Type:application/json"
-
+. rq_msg.sh $MSG
 

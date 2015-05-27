@@ -20,7 +20,7 @@ echo -n ..:fi >> /dev/ttyUSB0
 MSG="[${FILE}] has concluded processing. Coolant activated."
 fi
 
-curl --data "{\"message\":\"${MSG}\", \"channel\":\"##rqtest\", \"isaction\":false, \"key\":\"${APIKEY}\"}" https://crump.space/rq/relay -H "Content-Type:application/json"
+. rq_msg.sh $MSG
 
 . pop_part.sh &
 
