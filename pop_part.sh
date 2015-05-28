@@ -7,8 +7,11 @@
 # Christopher Bero [bigbero@gmail.com]
 #
 
+# Collect variables
+Z_HEIGHT=$1
+
 # Initiate resty
-. resty
+. /home/pi/cerealbox/resty
 
 # Setup log file
 LOG=/tmp/pop_part.log
@@ -63,20 +66,68 @@ sleep 8m
 # Turn off hotbed
 POST /printer/command '{"command":"M140 S0"}'
 sleep 2m
-/bin/bash fanctl.sh "on"
+/bin/bash /home/pi/cerealbox/fanctl.sh "on"
 sleep 25m
-/bin/bash fanctl.sh "off"
+/bin/bash /home/pi/cerealbox/fanctl.sh "off"
 sleep 5m
 echo "`date`: Done with cycle." >> $LOG
 
 }
 
-. rq_msg.sh "Activating automatic part adherence mitigation. Please stand clear."
+. /home/pi/cerealbox/rq_msg.sh "Activating automatic part adherence mitigation. Please stand clear."
 
-cycle_hotbed
-cycle_hotbed
+#cycle_hotbed
+#cycle_hotbed
 #cycle_hotbed
 #cycle_hotbed
 
-. rq_msg.sh "Finished automatic buildplate cycling. Part is prepared for collection."
+. /home/pi/cerealbox/rq_msg.sh "Finished automatic buildplate cycling."
+
+if [ -z $Z_HEIGHT ]; then
+. /home/pi/cerealbox/rq_msg.sh "Z is null, not moving print head."
+exit
+fi
+
+X_VAR=0
+Y_VAR=0
+Z_VAR=Z_HEIGHT
+
+function ptr_cmd {
+resty http://localhost/api
+POST /printer/command '{"command":"$1"}'
+}
+
+function mv_rel {
+DIR=$1
+DIST=$2
+if 
+}
+
+function reset_x {
+ptr_cmd "G28 X"
+X_VAR=0
+}
+
+
+function initial_z_check {
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

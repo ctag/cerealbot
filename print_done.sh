@@ -3,6 +3,7 @@
 # This script will check the status of a print
 # and have RedQueen alert me when a print is done.
 
+LOG=/tmp/print_start.log
 FILE=$1
 Z_HEIGHT=$2
 
@@ -17,5 +18,10 @@ fi
 
 . /home/pi/cerealbox/rq_msg.sh "$MSG"
 
-. /home/pi/cerealbox/pop_part.sh
+if [ $Z_HEIGHT -lt 2 ]; then
+. /home/pi/cerealbox/rq_msg.sh "Z-HEIGHT is invalid, aborting part removal. Manual intervention required."
+exit
+fi
+
+. /home/pi/cerealbox/pop_part.sh $Z_HEIGHT
 
