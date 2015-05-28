@@ -6,6 +6,7 @@
 LOG=/tmp/print_start.log
 FILE=$1
 Z_HEIGHT=$2
+Z_VAR=${Z_HEIGHT%.*}
 
 MSG="No Status. Something has broken the CerealBot."
 if [ "$FILE" = "cycle_hotbed.gcode" ]
@@ -13,15 +14,15 @@ then
 MSG="End Specilized hotbed code."
 else
 echo -n "..:fi" >> /dev/ttyUSB0
-MSG="[${FILE}] has concluded processing at [${Z_HEIGHT}]mm. Coolant activated."
+MSG="[${FILE}] has concluded processing at [${Z_HEIGHT}]mm alt [$Z_VAR]mm. Coolant activated."
 fi
 
 . /home/pi/cerealbox/rq_msg.sh "$MSG"
 
-if [ $Z_HEIGHT -lt 2 ]; then
+if [ $Z_VAR -lt 2 ]; then
 . /home/pi/cerealbox/rq_msg.sh "Z-HEIGHT is invalid, aborting part removal. Manual intervention required."
 exit
 fi
 
-. /home/pi/cerealbox/pop_part.sh $Z_HEIGHT
+. /home/pi/cerealbox/pop_part.sh $Z_VAR
 

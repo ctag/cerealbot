@@ -94,7 +94,7 @@ Z_VAR=$Z_HEIGHT
 
 function ptr_cmd {
 resty 'http://localhost/api'
-POST /printer/command '{"command":"$1"}'
+POST /printer/command "{\"command\":\"$1\"}"
 }
 
 # G91 is rel
@@ -102,7 +102,7 @@ POST /printer/command '{"command":"$1"}'
 
 function z_rel {
 DIST=$1
-Z_VAR=$Z_VAR+DIST;
+Z_VAR=$(($Z_VAR+$DIST));
 ptr_cmd "G91"
 ptr_cmd "G1 Z${DIST} F200"
 ptr_cmd "G90"
@@ -115,19 +115,43 @@ X_VAR=0
 
 
 function initial_z_check {
-if [ Z_VAR -lt 25 ]; then
-. /home/pi/cerealbox/rq_msg.sh "Probe is below allowable servo range."
+if [ $Z_VAR -lt 25 ]; then
+#. /home/pi/cerealbox/rq_msg.sh "Probe is below allowable servo range. Moving probe up to 25mm."
+Z_DELTA=$((25-$Z_VAR))
+#. /home/pi/cerealbox/rq_msg.sh "Moving probe by a delta of $Z_DELTA to reach 25mm."
+z_rel "$Z_DELTA"
+#. /home/pi/cerealbox/rq_msg.sh "New Z val: $Z_VAR"
 else
-. /home/pi/cerealbox/rq_msg.sh "Probe is at or above servo range."
+#. /home/pi/cerealbox/rq_msg.sh "Probe is at or above servo range."
+z_rel "10"
 fi
+}
 
+function servo_down {
+. /home/pi/cerealbox/servoctl.sh "100"
+}
+
+function servo_up {
+. /home/pi/cerealbox/servoctl.sh "142"
+}
+
+function y_push {
+ptr_cmd "G28 Y"
+servo_down
+ptr_cmd "G1 Y5 F1000"
+z_rel "5"
+servo_up
+ptr_cmd "G28 Y"
+z_rel "-5"
 }
 
 
 # Execute bed clearing functions
 
+servo_up
 initial_z_check
-
+ptr_cmd "G28 Y"
+y_push
 
 
 
