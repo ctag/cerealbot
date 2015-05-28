@@ -90,17 +90,22 @@ fi
 
 X_VAR=0
 Y_VAR=0
-Z_VAR=Z_HEIGHT
+Z_VAR=$Z_HEIGHT
 
 function ptr_cmd {
-resty http://localhost/api
+resty 'http://localhost/api'
 POST /printer/command '{"command":"$1"}'
 }
 
-function mv_rel {
-DIR=$1
-DIST=$2
-if 
+# G91 is rel
+# G90 is abs
+
+function z_rel {
+DIST=$1
+Z_VAR=$Z_VAR+DIST;
+ptr_cmd "G91"
+ptr_cmd "G1 Z${DIST} F200"
+ptr_cmd "G90"
 }
 
 function reset_x {
@@ -110,12 +115,18 @@ X_VAR=0
 
 
 function initial_z_check {
-
+if [ Z_VAR -lt 25 ]; then
+. /home/pi/cerealbox/rq_msg.sh "Probe is below allowable servo range."
+else
+. /home/pi/cerealbox/rq_msg.sh "Probe is at or above servo range."
+fi
 
 }
 
 
+# Execute bed clearing functions
 
+initial_z_check
 
 
 
