@@ -8,10 +8,10 @@
 #
 
 # Collect variables
-Z_HEIGHT=$1
+Z_VAR=$1
 
 # Initiate resty
-. /home/pi/cerealbox/resty
+. $CB_DIR/resty
 
 # Setup log file
 LOG=/tmp/pop_part.log
@@ -57,44 +57,43 @@ function cycle_hotbed {
 #API_HOTBED=`curl -H "X-Api-Key: $OCTO_API_KEY" -F select=true -F print=true -F file=@gcode/cycle_hotbed.gcode  http://bns-daedalus.256.makerslocal.org/api/files/local -o /tmp/printr_upload.json`
 
 # Set resty url
-resty http://bns-daedalus.256.makerslocal.org/api
+resty http://localhost/api
 # Make sure fan is off
-/bin/bash fanctl.sh "off"
+$CB_DIR/fanctl.sh "off"
 # Turn on hotbed to 70C
 POST /printer/command '{"command":"M140 S70"}'
 sleep 8m
 # Turn off hotbed
 POST /printer/command '{"command":"M140 S0"}'
 sleep 2m
-/bin/bash /home/pi/cerealbox/fanctl.sh "on"
+$CB_DIR/fanctl.sh "on"
 sleep 25m
-/bin/bash /home/pi/cerealbox/fanctl.sh "off"
+$CB_DIR/fanctl.sh "off"
 sleep 5m
 echo "`date`: Done with cycle." >> $LOG
 
 }
 
-. /home/pi/cerealbox/rq_msg.sh "Activating automatic part adherence mitigation. Please stand clear."
+#$CB_DIR/rq_msg.sh "Activating automatic part adherence mitigation. Please stand clear."
 
 #cycle_hotbed
 #cycle_hotbed
 #cycle_hotbed
 #cycle_hotbed
 
-. /home/pi/cerealbox/rq_msg.sh "Finished automatic buildplate cycling."
+#$CB_DIR/rq_msg.sh "Finished automatic buildplate cycling."
 
-if [ -z $Z_HEIGHT ]; then
-. /home/pi/cerealbox/rq_msg.sh "Z is null, not moving print head."
+if [ -z $Z_VAR ]; then
+MSG="Z is null, not moving print head."
+$CB_DIR/rq_msg.sh $MSG
+echo $MSG >> $LOG
 exit
 fi
 
-X_VAR=0
-Y_VAR=0
-Z_VAR=$Z_HEIGHT
 
 function ptr_cmd {
-resty 'http://localhost/api'
-POST /printer/command "{\"command\":\"$1\"}"
+echo "Sending printer command: $1"
+POST /printer/command "{\"command\":\"$1\"}" 1>> $LOG
 }
 
 # G91 is rel
@@ -102,9 +101,15 @@ POST /printer/command "{\"command\":\"$1\"}"
 
 function z_rel {
 DIST=$1
+Z_NEW=$(($Z_VAR+$DIST));
+if [ $Z_NEW -lt 25 ]; then
+echo "Refusing to move Z below 25mm. Setting Z = 25mm."
+DIST=$((25-$Z_VAR))
+fi
 Z_VAR=$(($Z_VAR+$DIST));
+echo "Moving Z relative: ${DIST}mm; final: ${Z_VAR}mm"
 ptr_cmd "G91"
-ptr_cmd "G1 Z${DIST} F200"
+ptr_cmd "G1 Z${DIST} F400"
 ptr_cmd "G90"
 }
 
@@ -115,44 +120,76 @@ X_VAR=0
 
 
 function initial_z_check {
-if [ $Z_VAR -lt 25 ]; then
-#. /home/pi/cerealbox/rq_msg.sh "Probe is below allowable servo range. Moving probe up to 25mm."
-Z_DELTA=$((25-$Z_VAR))
-#. /home/pi/cerealbox/rq_msg.sh "Moving probe by a delta of $Z_DELTA to reach 25mm."
+if [ $Z_VAR -lt 22 ]; then
+#$CB_DIR/rq_msg.sh "Probe is below allowable servo range. Moving probe up to 22mm."
+Z_DELTA=$((22-$Z_VAR))
+#$CB_DIR/rq_msg.sh "Moving probe by a delta of $Z_DELTA to reach 22mm."
 z_rel "$Z_DELTA"
-#. /home/pi/cerealbox/rq_msg.sh "New Z val: $Z_VAR"
-else
-#. /home/pi/cerealbox/rq_msg.sh "Probe is at or above servo range."
-z_rel "10"
+#$CB_DIR/rq_msg.sh "New Z val: $Z_VAR"
 fi
 }
 
-function servo_down {
-. /home/pi/cerealbox/servoctl.sh "100"
-}
-
-function servo_up {
-. /home/pi/cerealbox/servoctl.sh "142"
+function servo {
+if [ $1 = "deploy" ]; then
+echo "Activating bar."
+$CB_DIR/servoctl.sh "$BAR_DEPLOYED"
+fi
+if [ $1 = "store" ]; then
+echo "Storing bar."
+$CB_DIR/servoctl.sh "$BAR_STORED"
+fi
+if [ $1 = "forward" ]; then
+echo "Setting bar forward."
+$CB_DIR/servoctl.sh "$BAR_FORWARD"
+fi
+sleep 1s
 }
 
 function y_push {
 ptr_cmd "G28 Y"
-servo_down
-ptr_cmd "G1 Y5 F1000"
-z_rel "5"
-servo_up
+servo deploy
+ptr_cmd "G1 Y5 F1700"
+sleep 5s
+servo forward
+z_rel "10"
 ptr_cmd "G28 Y"
-z_rel "-5"
+sleep 5s
+servo store
+z_rel "-10"
 }
 
+function x_scan {
+ptr_cmd "G28 X"
+X_VAR=0
+while [ $X_VAR -lt 120 ];
+do
+echo "X is ${X_VAR}mm"
+y_push
+X_VAR=$(($X_VAR+20))
+ptr_cmd "G1 X${X_VAR} F1500"
+done
+}
 
 # Execute bed clearing functions
 
-servo_up
-initial_z_check
+ptr_cmd "G28 X"
+X_VAR=0
 ptr_cmd "G28 Y"
-y_push
+Y_VAR=0
+sleep 6s
 
+resty 'http://localhost/api' 1>> $LOG
+MSG="Clearing print bed"
+echo $MSG >> $LOG
+$CB_DIR/fanctl.sh off
+servo store
+initial_z_check
+z_rel "6"
+while [ $Z_VAR -gt 22 ]
+do
+x_scan
+z_rel "-2"
+done
 
 
 
