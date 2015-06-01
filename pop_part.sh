@@ -102,9 +102,9 @@ POST /printer/command "{\"command\":\"$1\"}" 1>> $LOG
 function z_rel {
 DIST=$1
 Z_NEW=$(($Z_VAR+$DIST));
-if [ $Z_NEW -lt 25 ]; then
-echo "Refusing to move Z below 25mm. Setting Z = 25mm."
-DIST=$((25-$Z_VAR))
+if [ $Z_NEW -lt 14 ]; then
+echo "Refusing to move Z below 14mm. Setting Z = 14mm."
+DIST=$((14-$Z_VAR))
 fi
 Z_VAR=$(($Z_VAR+$DIST));
 echo "Moving Z relative: ${DIST}mm; final: ${Z_VAR}mm"
@@ -130,6 +130,10 @@ fi
 }
 
 function servo {
+if [ $Z_VAR -lt 23 ]; then
+	echo "not moving bar when Z too low"
+	return
+fi
 if [ $1 = "deploy" ]; then
 echo "Activating bar."
 $CB_DIR/servoctl.sh "$BAR_DEPLOYED"
@@ -147,7 +151,14 @@ sleep 1s
 
 function y_push {
 ptr_cmd "G28 Y"
-servo deploy
+if [ $Z_VAR -lt 24 ]; then
+	z_rel "10"
+	sleep 5s
+	servo deploy
+	z_rel "-10"
+else
+	servo deploy
+fi
 ptr_cmd "G1 Y5 F1700"
 sleep 5s
 servo forward
@@ -185,10 +196,10 @@ $CB_DIR/fanctl.sh off
 servo store
 initial_z_check
 z_rel "6"
-while [ $Z_VAR -gt 22 ]
+while [ $Z_VAR -gt 15 ]
 do
 x_scan
-z_rel "-2"
+z_rel "-4"
 done
 
 
