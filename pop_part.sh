@@ -10,17 +10,41 @@
 # Collect variables
 Z_VAR=$1
 
-# Initiate resty
+# Initialize resty
 . $CB_DIR/resty
 
 # Setup log file
 LOG=/tmp/pop_part.log
-echo "`date`: Begin pop_part.sh" >> $LOG
+
+# function to print to std, rq, and logfile
+function write_msg {
+    METHOD=$1
+    MSG=$2
+    case "$METHOD" in
+	*STD*)
+	    echo "$MSG"
+	;;
+    esac
+    case "$METHOD" in
+	*RQ*)
+	    $CB_DIR/rq_msg.sh "$MSG"
+	;;
+    esac
+    case "$METHOD" in
+	*LOG*)
+	    echo "`date`: ${MSG}" >> $LOG
+	;;
+    esac
+}
+
+MSG="Begin pop_part.sh"
+write_msg "LOG,STD" "$MSG"
 
 # Fetch Printer Status
 PRINTR_STATUS=`curl -H "X-Api-Key:$OCTO_API_KEY" http://bns-daedalus.256.makerslocal.org/api/printer -o /tmp/printr_status.json`
 if [ $? -ne 0 ]; then
-    echo "`date`: curl failed, exiting." >> $LOG
+    MSG="Status failed, exiting."
+    write_msg "LOG,RQ,STD" $MSG
     exit
 fi
 
@@ -29,12 +53,12 @@ fi
 # Check printer state
 cat /tmp/printr_status.json | grep "\"state\": 5,"
 PTR_ST=$?
-echo "`date`: Printer state: $PTR_ST" >> $LOG
+write_msg "STD,LOG" "Printer state: $PTR_ST"
 if [ $PTR_ST -eq 1 ]; then
-    echo "`date`: Exiting due to printer state." >> $LOG
+    write_msg "STD,LOG" "Exiting due to printer state."
     exit
 else
-    echo "`date`: Printer reports state 5." >> $LOG
+    write_msg "STD,LOG" "Printer reports state 5."
 fi
 
 # Check that printer is Operational
@@ -42,16 +66,15 @@ cat /tmp/printr_status.json | grep "\"stateString\": \"Operational\","
 PTR_OP=$?
 echo "`date`: Printer operational: $PTR_OP" >> $LOG
 if [ $PTR_OP -eq 1 ]; then
-    echo "`date`: Exiting due to printer operational string." >> $LOG
+    write_msg "STD,LOG,RQ" "Exiting due to printer operational string."
     exit
 else
-    echo "`date`: Printer reports operational status." >> $LOG
+    write_msg "STD,LOG" "Printer reports operational status."
 fi
 
-echo "`date`: Printer looks good, proceeding to loosen part" >> $LOG
+write_msg "STD,LOG" "Printer looks good, proceeding to loosen part"
 
 function cycle_hotbed {
-
 # Run the hotbed code
 #curl -H "X-Api-Key: $api_key" -F select=true -F print=false -F file=@$f http://beaglebone.local:5000/api/files/local
 #API_HOTBED=`curl -H "X-Api-Key: $OCTO_API_KEY" -F select=true -F print=true -F file=@gcode/cycle_hotbed.gcode  http://bns-daedalus.256.makerslocal.org/api/files/local -o /tmp/printr_upload.json`
@@ -70,32 +93,31 @@ function cycle_hotbed {
     sleep 25m
     $CB_DIR/fanctl.sh "off"
     sleep 5m
-    echo "`date`: Done with cycle." >> $LOG
-
+    write_msg "STD,LOG" "Done with cycle."
 }
 
-#$CB_DIR/rq_msg.sh "Activating automatic part adherence mitigation. Please stand clear."
+write_msg "RQ,STD,LOG" "Activating automatic part adherence mitigation. Please stand clear."
 
 cycle_hotbed
 cycle_hotbed
 cycle_hotbed
 cycle_hotbed
 
-exit
+sleep 30m
 
-#$CB_DIR/rq_msg.sh "Finished automatic buildplate cycling."
+#exit
+
+write_msg "STD,RQ,LOG" "Finished automatic buildplate cycling."
 
 if [ -z $Z_VAR ]; then
-    MSG="Z is null, not moving print head."
-    $CB_DIR/rq_msg.sh $MSG
-    echo $MSG >> $LOG
+    write_msg "STD,LOG,RQ" "Z is null, not moving print head."
     exit
 fi
 
 
 function ptr_cmd {
-    echo "Sending printer command: $1"
-    POST /printer/command "{\"command\":\"$1\"}" 1>> $LOG
+    write_msg "STD,LOG" "Sending printer command: $1"
+    POST /printer/command "{\"command\":\"$1\"}"
 }
 
 # G91 is rel
@@ -113,36 +135,42 @@ function rel {
     if [ $DIR = Z ]; then
 	Z_NEW=$(($Z_VAR+$DIST));
 	if [ $Z_NEW -lt 14 ]; then
-            echo "Refusing to move Z below 14mm. Z=14mm." >> $LOG
+            write_msg "STD,LOG,RQ" "Refusing to move Z below 14mm. Z=14mm."
             DIST=$((14-$Z_VAR))
 	    Z_NEW=14
 	fi
 	Z_VAR=$Z_NEW
-	echo "Moving Z relative: ${DIST}mm; final: ${Z_VAR}mm"
+	write_msg "STD,LOG" "Moving Z relative: ${DIST}mm; final: ${Z_VAR}mm"
 	ptr_cmd "G91"
 	ptr_cmd "G1 Z${DIST} F400"
 	ptr_cmd "G90"
     fi
     if [ $DIR = X ]; then
 	X_NEW=$(($X_VAR+$DIST));
-	if [ $X_NEW -lt 0 -o $X_NEW -gt 120 ]; then
-	    echo "Refusing to move X to ${DIST}mm."
-	    return
+	if [ $X_NEW -lt 0 ]; then
+            write_msg "STD,LOG" "Refusing to move X to ${X_NEW}mm. X=0mm."
+	    X_NEW=0
+	    DIST=$((0-$X_VAR))
+	fi
+	if [ $X_NEW -gt 130 ]; then
+	    write_msg "STD,LOG" "Refusing to move X to ${X_NEW}mm. X=130mm."
+	    X_NEW=130
+	    DIST=$((130-$X_VAR))
 	fi
 	X_VAR=$X_NEW
-	echo "Moving X relative: ${DIST}mm; final: ${X_VAR}mm"
+	write_msg "STD,LOG" "Moving X relative: ${DIST}mm; final: ${X_VAR}mm"
 	ptr_cmd "G91"
 	ptr_cmd "G1 X${DIST} F1300"
 	ptr_cmd "G90"
     fi
     if [ $DIR = Y ]; then
 	Y_NEW=$(($Y_VAR+$DIST));
-	if [ $Y_NEW -lt 0 -o $Y_NEW -gt 140 ]; then
-	    echo "Refusing to move Y to ${DIST}mm."
-	    return
+	if [ $Y_NEW -lt 0 ] || [ $Y_NEW -gt 140 ]; then
+	    write_msg "STD,LOG,RQ" "Refusing to move Y to ${DIST}mm. Halting."
+	    exit
 	fi
 	Y_VAR=$Y_NEW
-	echo "Moving Y relative: ${DIST}mm; final: ${Y_VAR}mm"
+        write_msg "STD,LOG" "Moving Y relative: ${DIST}mm; final: ${Y_VAR}mm"
 	ptr_cmd "G91"
 	ptr_cmd "G1 Y${DIST} F1300"
 	ptr_cmd "G90"
@@ -179,23 +207,23 @@ Z_MIN=15
 
 function servo {
     if [ $Z_VAR -lt 14 ]; then
-        echo "not moving bar when Z too low"
+        write_msg "STD,LOG,RQ" "not moving bar when Z too low"
         return
     fi
-if [ $Z_VAR -lt 24 -a $Y_VAR -gt 105 ]; then
-    echo "Not lowering the bar, Y is too high."
-    return
-fi
+    if [ $Z_VAR -lt 24 -a $Y_VAR -gt 105 ]; then
+	write_msg "STD,LOG,RQ" "Not lowering the bar, Y is too high."
+	return
+    fi
     if [ $1 = "deploy" ]; then
-	echo "Activating bar."
+	write_msg "STD,LOG" "Deploying bar."
 	$CB_DIR/servoctl.sh "$BAR_DEPLOYED"
     fi
     if [ $1 = "store" ]; then
-	echo "Storing bar."
+	write_msg "STD,LOG" "Storing bar."
 	$CB_DIR/servoctl.sh "$BAR_STORED"
     fi
     if [ $1 = "forward" ]; then
-	echo "Setting bar forward."
+	write_msg "STD,LOG" "Setting bar forward."
 	$CB_DIR/servoctl.sh "$BAR_FORWARD"
     fi
     sleep 1s
@@ -215,11 +243,11 @@ function y_push {
     ptr_cmd "G1 Y5 F1700"
     sleep 5s
     servo forward
-Z_REL=5
-if [ $Z_VAR -lt 24 ]; then
-    Z_REL=$((24-$Z_VAR))
-fi
-rel Z $Z_REL
+    Z_REL=5
+    if [ $Z_VAR -lt 24 ]; then
+	Z_REL=$((24-$Z_VAR))
+    fi
+    rel Z $Z_REL
     #ptr_cmd "G28 Y"
     reset Y
     sleep 5s
@@ -230,9 +258,9 @@ rel Z $Z_REL
 function x_scan {
     ptr_cmd "G28 X"
     X_VAR=0
-    while [ $X_VAR -lt 40 ];
+    while [ $X_VAR -lt 130 ];
     do
-	echo "X is ${X_VAR}mm"
+	write_msg "STD,LOG" "X is ${X_VAR}mm"
 	y_push
 	rel "X" 25
     done
@@ -250,8 +278,7 @@ reset X
 reset Y
 sleep 6s
 
-MSG="Clearing print bed"
-echo $MSG >> $LOG
+write_msg "STD,LOG,RQ" "Clearing print bed"
 $CB_DIR/fanctl.sh off
 servo store
 initial_z_check
@@ -261,16 +288,4 @@ do
     x_scan
     rel Z "-4"
 done
-
-
-
-
-
-
-
-
-
-
-
-
-
+x_scan
