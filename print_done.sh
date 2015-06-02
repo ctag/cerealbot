@@ -14,15 +14,15 @@ then
 MSG="End Specilized hotbed code."
 else
 echo -n "..:fi" >> /dev/ttyUSB0
-MSG="[${FILE}] has concluded processing at [${Z_HEIGHT}]mm alt [$Z_VAR]mm. Coolant activated."
+MSG="[${FILE}] has concluded processing at [$Z_VAR]mm. Coolant activated."
 fi
 
-. /home/pi/cerealbox/rq_msg.sh "$MSG"
+$CB_DIR/rq_msg.sh "$MSG"
 
 if [ $Z_VAR -lt 2 ]; then
-. /home/pi/cerealbox/rq_msg.sh "Z-HEIGHT is invalid, aborting part removal. Manual intervention required."
+$CB_DIR/rq_msg.sh "Z-HEIGHT is invalid, aborting part removal. Manual intervention required."
 exit
 fi
 
-. /home/pi/cerealbox/pop_part.sh $Z_VAR
+$CB_DIR/pop_part.sh $Z_VAR
 
