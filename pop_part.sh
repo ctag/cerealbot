@@ -8,6 +8,7 @@
 #
 
 # Collect variables
+. /home/pi/.cerealbox/config
 Z_VAR=$1
 
 # Initialize resty
@@ -103,7 +104,7 @@ cycle_hotbed
 cycle_hotbed
 cycle_hotbed
 
-sleep 30m
+sleep 5m
 
 #exit
 
@@ -152,7 +153,7 @@ function rel {
 	    X_NEW=0
 	    DIST=$((0-$X_VAR))
 	fi
-	if [ $X_NEW -gt 130 ]; then
+	if [ $X_NEW -gt 125 ]; then
 	    write_msg "STD,LOG" "Refusing to move X to ${X_NEW}mm. X=130mm."
 	    X_NEW=130
 	    DIST=$((130-$X_VAR))
@@ -258,7 +259,7 @@ function y_push {
 function x_scan {
     ptr_cmd "G28 X"
     X_VAR=0
-    while [ $X_VAR -lt 130 ];
+    while [ $X_VAR -lt 125 ];
     do
 	write_msg "STD,LOG" "X is ${X_VAR}mm"
 	y_push
@@ -289,3 +290,4 @@ do
     rel Z "-4"
 done
 x_scan
+write_msg "STD,LOG,RQ" "Should be done clearing print bed."
