@@ -99,12 +99,12 @@ function cycle_hotbed {
 
 write_msg "RQ,STD,LOG" "Activating automatic part adherence mitigation. Please stand clear."
 
-cycle_hotbed
-cycle_hotbed
-cycle_hotbed
-cycle_hotbed
+#cycle_hotbed
+#cycle_hotbed
+#cycle_hotbed
+#cycle_hotbed
 
-sleep 5m
+#sleep 5m
 
 #exit
 
@@ -119,6 +119,21 @@ fi
 function ptr_cmd {
     write_msg "STD,LOG" "Sending printer command: $1"
     POST /printer/command "{\"command\":\"$1\"}"
+}
+
+function ptr_cmds {
+    cmds=""
+    for cmd in "$@"
+    do
+	write_msg "STD,LOG" "[$cmd]"
+	if [ "$cmd" = "$1" ]; then
+	    cmds="\"${cmd}\""
+	else
+	    cmds="${cmds},\"${cmd}\""
+	fi
+    done
+    write_msg "STD,LOG" "Sending printer commands: $cmds"
+    POST /printer/command "{\"commands\":[$cmds]}"
 }
 
 # G91 is rel
@@ -142,9 +157,9 @@ function rel {
 	fi
 	Z_VAR=$Z_NEW
 	write_msg "STD,LOG" "Moving Z relative: ${DIST}mm; final: ${Z_VAR}mm"
-	ptr_cmd "G91"
-	ptr_cmd "G1 Z${DIST} F400"
-	ptr_cmd "G90"
+	#ptr_cmd "G91"
+	ptr_cmds "G91" "G1 Z${DIST} F800" "G90"
+	#ptr_cmd "G90"
     fi
     if [ $DIR = X ]; then
 	X_NEW=$(($X_VAR+$DIST));
@@ -160,9 +175,9 @@ function rel {
 	fi
 	X_VAR=$X_NEW
 	write_msg "STD,LOG" "Moving X relative: ${DIST}mm; final: ${X_VAR}mm"
-	ptr_cmd "G91"
-	ptr_cmd "G1 X${DIST} F1300"
-	ptr_cmd "G90"
+	#ptr_cmd "G91"
+	ptr_cmds "G91" "G1 X${DIST} F5000" "G90"
+	#ptr_cmd "G90"
     fi
     if [ $DIR = Y ]; then
 	Y_NEW=$(($Y_VAR+$DIST));
@@ -172,9 +187,9 @@ function rel {
 	fi
 	Y_VAR=$Y_NEW
         write_msg "STD,LOG" "Moving Y relative: ${DIST}mm; final: ${Y_VAR}mm"
-	ptr_cmd "G91"
-	ptr_cmd "G1 Y${DIST} F1300"
-	ptr_cmd "G90"
+	#ptr_cmd "G91"
+	ptr_cmds "G91" "G1 Y${DIST} F5000" "G90"
+	#ptr_cmd "G90"
     fi
 }
 
@@ -208,11 +223,11 @@ Z_MIN=15
 
 function servo {
     if [ $Z_VAR -lt 14 ]; then
-        write_msg "STD,LOG,RQ" "not moving bar when Z too low"
+        write_msg "STD,LOG" "not moving bar when Z too low"
         return
     fi
-    if [ $Z_VAR -lt 24 -a $Y_VAR -gt 105 ]; then
-	write_msg "STD,LOG,RQ" "Not lowering the bar, Y is too high."
+    if [ $Z_VAR -lt 24 -a $Y_VAR -gt 115 ]; then
+	write_msg "STD,LOG" "Not lowering the bar, Y is too high."
 	return
     fi
     if [ $1 = "deploy" ]; then
@@ -234,15 +249,14 @@ function y_push {
     #ptr_cmd "G28 Y"
     reset Y
     if [ $Z_VAR -lt 24 ]; then
-        rel Y "-40"
+        rel Y "-30"
         sleep 3s
         servo deploy
-        #rel Y "-20"
     else
         servo deploy
     fi
-    ptr_cmd "G1 Y5 F1700"
-    sleep 5s
+    ptr_cmd "G1 Y5 F5000"
+    sleep 3s
     servo forward
     Z_REL=5
     if [ $Z_VAR -lt 24 ]; then
@@ -250,8 +264,8 @@ function y_push {
     fi
     rel Z $Z_REL
     #ptr_cmd "G28 Y"
-    reset Y
-    sleep 5s
+    ptr_cmd "G1 Y145 F5000"
+    sleep 3s
     servo store
     rel Z "-${Z_REL}"
 }
@@ -277,7 +291,7 @@ resty 'http://localhost/api' 1>> $LOG
 #Y_VAR=0
 reset X
 reset Y
-sleep 6s
+sleep 4s
 
 write_msg "STD,LOG,RQ" "Clearing print bed"
 $CB_DIR/fanctl.sh off
