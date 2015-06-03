@@ -3,7 +3,7 @@
 # This script will check the status of a print
 # and have RedQueen alert me when a print is done.
 
-LOG=/tmp/print_start.log
+LOG=/tmp/print_done.log
 FILE=$1
 Z_HEIGHT=$2
 Z_VAR=${Z_HEIGHT%.*}
@@ -18,11 +18,14 @@ MSG="[${FILE}] has concluded processing at [$Z_VAR]mm. Coolant activated."
 fi
 
 $CB_DIR/rq_msg.sh "$MSG"
+echo "`date`: $MSG" >> $LOG
 
 if [ $Z_VAR -lt 2 ]; then
-$CB_DIR/rq_msg.sh "Z-HEIGHT is invalid, aborting part removal. Manual intervention required."
+MSG="Z-HEIGHT is invalid, aborting part removal. Manual intervention required."
+$CB_DIR/rq_msg.sh "$MSG"
+echo "`date`: $MSG" >> $LOG
 exit
 fi
 
-$CB_DIR/pop_part.sh $Z_VAR
+$CB_DIR/pop_part.sh "$Z_VAR"
 
