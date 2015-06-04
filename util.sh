@@ -31,6 +31,16 @@ function printr_status {
 	$CB_DIR/printr_status.sh "$@"
 }
 
+# Forward arguments to printr_cmd.sh
+function printr_cmd {
+	$CB_DIR/printr_cmd.sh "$@"
+}
+
+
+
+
+
+
 
 
 

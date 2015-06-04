@@ -28,8 +28,13 @@ write_msg "RQ,LOG" "$MSG" $LOG
 exit
 fi
 
-write_msg "LOG" "Sleeping to let buildplate cool off." $LOG
-sleep 30m
+write_msg "LOG" "Sleeping to let buildplate cool off." "$LOG"
+sleep 20m
+
+write_msg "LOG,STD" "Deleting $FILE from server queue." "$LOG"
+DELETE "/files/local/$FILE"
 
 $CB_DIR/pop_part.sh "$FILE" "$Z_VAR"
 
+# Release flag set in print_start.sh
+export CB_BUSY=0

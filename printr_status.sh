@@ -3,7 +3,8 @@
 # Printer Status
 # Returns 0 on success
 
-ret=1
+# Failure code
+RETFAIL=1
 
 # Setup log file
 LOG=/tmp/printr_status.log
@@ -15,7 +16,7 @@ PRINTR_STATUS=`curl -H "X-Api-Key:$OCTO_API_KEY" http://bns-daedalus.256.makersl
 if [ $? -ne 0 ]; then
     MSG="Status failed, exiting."
     write_msg "LOG,STD" $MSG
-    exit "$ret"
+    exit "$RETFAIL"
 fi
 
 # Verify printer is ready to pop the part
@@ -26,7 +27,7 @@ PTR_ST=$?
 write_msg "STD,LOG" "Printer state: $PTR_ST"
 if [ $PTR_ST -eq 1 ]; then
     write_msg "STD,LOG" "Exiting due to printer state."
-    exit "$ret"
+    exit "$RETFAIL"
 else
     write_msg "STD,LOG" "Printer reports state 5."
 fi
@@ -37,7 +38,7 @@ PTR_OP=$?
 echo "`date`: Printer operational: $PTR_OP" >> $LOG
 if [ $PTR_OP -eq 1 ]; then
     write_msg "STD,LOG" "Exiting due to printer operational string."
-    exit "$ret"
+    exit "$RETFAIL"
 else
     write_msg "STD,LOG" "Printer reports operational status."
 fi
