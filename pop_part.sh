@@ -26,7 +26,7 @@ Z_VAR=$2
 MSG="Begin pop_part.sh"
 write_msg "LOG,STD" "$MSG" "$LOG"
 
-STATUS=`$CB_DIR/printr_status.sh`
+STATUS=printr_status
 
 if [ "$STATUS" -ne 0 ]; then
 	write_msg "LOG,STD" "Printer status is non-zero. Exiting $0." "$LOG"
