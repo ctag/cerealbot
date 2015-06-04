@@ -10,6 +10,8 @@
 LOG=/tmp/write_msg.log
 RETVAL=0
 
+echo "args: $#"
+
 # Check for proper number of arguments
 if [ "$#" -gt 3 ] || [ "$#" -lt 2 ]; then
 	METHOD="STD,LOG,RQ"
@@ -45,11 +47,15 @@ esac
 case "$METHOD" in
 *LOG*)
 	echo "`date`: ${MSG}" >> $MSG_LOG
-	if [ "$RETVAL" -eq 1 ]; then
-		echo "`date`: Arguments: $@" >> $MSG_LOG
-	fi
 ;;
 esac
+
+if [ "$RETVAL" -eq 1 ]; then
+	for arg in $@
+	do
+		echo "`date`: Arg: $arg" >> $MSG_LOG
+	done
+fi
 
 exit $RETVAL
 
