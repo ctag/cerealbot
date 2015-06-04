@@ -3,6 +3,8 @@
 # This script will check the status of a print
 # and have RedQueen alert me when a print is done.
 
+. /home/pi/.cerealbox/config
+
 LOG=/tmp/print_done.log
 FILE=$1
 Z_HEIGHT=$2
@@ -26,6 +28,9 @@ $CB_DIR/rq_msg.sh "$MSG"
 echo "`date`: $MSG" >> $LOG
 exit
 fi
+
+echo "`date`: Sleeping to let buildplate cool off." >> $LOG
+sleep 30m
 
 $CB_DIR/pop_part.sh "$Z_VAR"
 
