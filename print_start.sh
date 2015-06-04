@@ -14,6 +14,6 @@ FILE=$1
 fanctl "off"
 
 MSG="Be aware, [${FILE}] replication has initiated. Coolant deactivated."
-rq_msg "RQ" "$MSG"
+write_msg "RQ" "$MSG"
 
 
