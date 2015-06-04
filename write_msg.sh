@@ -10,8 +10,6 @@
 LOG=/tmp/write_msg.log
 RETVAL=0
 
-echo "args: $#"
-
 # Check for proper number of arguments
 if [ "$#" -gt 3 ] || [ "$#" -lt 2 ]; then
 	METHOD="STD,LOG,RQ"

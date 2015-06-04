@@ -21,5 +21,6 @@ for cmd in "$@"
 	fi
 done
 
-write_msg "STD,LOG" "Sending printer commands: $cmds" "$LOG"
+$CB_DIR/write_msg.sh "STD,LOG" "Sending printer commands: $cmds" "$LOG"
+resty 'http://localhost/api'
 POST /printer/command "{\"commands\":[$cmds]}"

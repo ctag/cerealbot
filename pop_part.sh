@@ -54,13 +54,13 @@ function cycle_hotbed {
 }
 
 write_msg "RQ,STD,LOG" "Activating automatic part adherence mitigation. Please stand clear." "$LOG"
-cycle_hotbed
-cycle_hotbed
-cycle_hotbed
-cycle_hotbed
+#cycle_hotbed
+#cycle_hotbed
+#cycle_hotbed
+#cycle_hotbed
 write_msg "STD,RQ,LOG" "Finished automatic buildplate cycling." "$LOG"
 
-sleep 3m
+#sleep 3m
 
 if [ -z $Z_VAR ]; then
     write_msg "STD,LOG,RQ" "Z is null, not moving print head." "$LOG"

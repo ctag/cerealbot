@@ -29,7 +29,7 @@ exit
 fi
 
 write_msg "LOG" "Sleeping to let buildplate cool off." "$LOG"
-sleep 20m
+#sleep 20m
 
 write_msg "LOG,STD" "Deleting $FILE from server queue." "$LOG"
 DELETE "/files/local/$FILE"
