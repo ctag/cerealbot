@@ -7,27 +7,8 @@ ret=1
 
 # Setup log file
 LOG=/tmp/printr_status.log
-
-# function to print to std, rq, and logfile
-function write_msg {
-    METHOD=$1
-    MSG=$2
-    case "$METHOD" in
-	*STD*)
-	    echo "$MSG"
-	;;
-    esac
-    case "$METHOD" in
-	*RQ*)
-	    $CB_DIR/rq_msg.sh "$MSG"
-	;;
-    esac
-    case "$METHOD" in
-	*LOG*)
-	    echo "`date`: ${MSG}" >> $LOG
-	;;
-    esac
-}
+. /home/pi/.cerealbox/config
+. /home/pi/cerealbox/write_msg.sh
 
 # Fetch Printer Status
 PRINTR_STATUS=`curl -H "X-Api-Key:$OCTO_API_KEY" http://bns-daedalus.256.makerslocal.org/api/printer -o /tmp/printr_status.json`

@@ -9,7 +9,7 @@
 
 # Source common config/vars
 . /home/pi/.cerealbox/config
-. /home/pi/.cerealbox/write_msg.sh
+. /home/pi/cerealbox/write_msg.sh
 
 # Set log file
 LOG=/tmp/pop_part.log

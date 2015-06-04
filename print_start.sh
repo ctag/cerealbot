@@ -6,12 +6,14 @@
 # "Locks" printer for our use
 export CB_BUSY=1
 
+# Source helper scripts and variables
+. util.sh
+
 FILE=$1
 
-echo -n ..:fo >> /dev/ttyUSB0
+fanctl "off"
 
 MSG="Be aware, [${FILE}] replication has initiated. Coolant deactivated."
-
-. /home/pi/cerealbox/rq_msg.sh "$MSG"
+rq_msg "RQ" "$MSG"
 
 
