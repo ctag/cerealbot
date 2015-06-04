@@ -3,77 +3,38 @@
 #
 # This script is called after a part has been printed
 # If the printer status is agreeable, it will then
-# activate a .gcode file to loosen the printed part
+# do things.
 # Christopher Bero [bigbero@gmail.com]
 #
 
-# Collect variables
+# Source common config/vars
 . /home/pi/.cerealbox/config
-Z_VAR=$1
+. /home/pi/.cerealbox/write_msg.sh
 
-# Initialize resty
-. $CB_DIR/resty
-
-# Setup log file
+# Set log file
 LOG=/tmp/pop_part.log
 
-# function to print to std, rq, and logfile
-function write_msg {
-    METHOD=$1
-    MSG=$2
-    case "$METHOD" in
-	*STD*)
-	    echo "$MSG"
-	;;
-    esac
-    case "$METHOD" in
-	*RQ*)
-	    $CB_DIR/rq_msg.sh "$MSG"
-	;;
-    esac
-    case "$METHOD" in
-	*LOG*)
-	    echo "`date`: ${MSG}" >> $LOG
-	;;
-    esac
-}
+# Check number of variables
+if [ "$#" -ne 2 ]; then
+	write_msg "STD,LOG" "$0 started without 2 arguments. Exiting."
+	exit
+fi
+
+# Collect variables
+FILE=$1
+Z_VAR=$2
 
 MSG="Begin pop_part.sh"
 write_msg "LOG,STD" "$MSG"
 
-# Fetch Printer Status
-PRINTR_STATUS=`curl -H "X-Api-Key:$OCTO_API_KEY" http://bns-daedalus.256.makerslocal.org/api/printer -o /tmp/printr_status.json`
-if [ $? -ne 0 ]; then
-    MSG="Status failed, exiting."
-    write_msg "LOG,RQ,STD" $MSG
-    exit
+STATUS=`$CB_DIR/printr_status.sh`
+
+if [ "$STATUS" -ne 0 ]; then
+	write_msg "LOG,STD" "Printer status is non-zero. Exiting $0."
+	exit
 fi
 
-# Verify printer is ready to pop the part
-
-# Check printer state
-cat /tmp/printr_status.json | grep "\"state\": 5,"
-PTR_ST=$?
-write_msg "STD,LOG" "Printer state: $PTR_ST"
-if [ $PTR_ST -eq 1 ]; then
-    write_msg "STD,LOG" "Exiting due to printer state."
-    exit
-else
-    write_msg "STD,LOG" "Printer reports state 5."
-fi
-
-# Check that printer is Operational
-cat /tmp/printr_status.json | grep "\"stateString\": \"Operational\","
-PTR_OP=$?
-echo "`date`: Printer operational: $PTR_OP" >> $LOG
-if [ $PTR_OP -eq 1 ]; then
-    write_msg "STD,LOG,RQ" "Exiting due to printer operational string."
-    exit
-else
-    write_msg "STD,LOG" "Printer reports operational status."
-fi
-
-write_msg "STD,LOG" "Printer looks good, proceeding to loosen part"
+write_msg "STD,LOG" "Printer looks good, proceeding with build plate cycling."
 
 function cycle_hotbed {
 # Run the hotbed code
@@ -301,3 +262,7 @@ do
 done
 x_scan
 write_msg "STD,LOG,RQ" "Should be done clearing print bed."
+
+# Release flag set in print_start.sh
+export CB_BUSY=0
+

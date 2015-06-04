@@ -32,5 +32,5 @@ fi
 echo "`date`: Sleeping to let buildplate cool off." >> $LOG
 sleep 30m
 
-$CB_DIR/pop_part.sh "$Z_VAR"
+$CB_DIR/pop_part.sh "$FILE" "$Z_VAR"
 

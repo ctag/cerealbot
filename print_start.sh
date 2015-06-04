@@ -3,6 +3,9 @@
 # This script will check the status of a print
 # and have ReqQueen alert me when a print is done.
 
+# "Locks" printer for our use
+export CB_BUSY=1
+
 FILE=$1
 
 echo -n ..:fo >> /dev/ttyUSB0
