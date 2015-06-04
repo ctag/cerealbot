@@ -14,7 +14,7 @@ LOG=/tmp/cb_rq_msg.log
 MSG=$1
 
 # Write to logfile
-$CB_DIR/rq_msg.sh "LOG" "Writing message [$MSG] to RedQueen." "$LOG"
+$CB_DIR/write_msg.sh "LOG" "Writing message [$MSG] to RedQueen." "$LOG"
 
 # Make API call
 POST /relay "{\"message\":\"${MSG}\", \"channel\":\"##rqtest\", \"isaction\":false, \"key\":\"$RQ_API_KEY\"}" >> $LOG
