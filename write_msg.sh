@@ -14,7 +14,7 @@ RETVAL=0
 if [ "$#" -gt 3 ] || [ "$#" -lt 2 ]; then
 	METHOD="STD,LOG,RQ"
 	MSG="Alert - write_msg function is being called with bad arguments. \
-		Details in /tmp/write_msg.log."
+Details in ${LOG}."
 	MSG_LOG=$LOG
 	RETVAL=1
 else
@@ -37,7 +37,7 @@ esac
 # Check for RedQueen output
 case "$METHOD" in
 *RQ*)
-	rq_msg "[CB]: $MSG"
+	$CB_DIR/rq_msg.sh "[CB]: $MSG"
 ;;
 esac
 
@@ -45,6 +45,9 @@ esac
 case "$METHOD" in
 *LOG*)
 	echo "`date`: ${MSG}" >> $MSG_LOG
+	if [ "$RETVAL" -eq 1 ]; then
+		echo "`date`: Arguments: $@" >> $MSG_LOG
+	fi
 ;;
 esac
 
