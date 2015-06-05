@@ -14,7 +14,7 @@ fi
 LOG=/tmp/push_part.log
 
 # Check number of variables
-if [ "$#" -ne 2 ]; then
+if [ $# -ne 2 ]; then
 	write_msg "STD,LOG" "$0 started without 2 arguments. Exiting." "$LOG"
 	exit
 fi
@@ -28,7 +28,7 @@ write_msg "LOG,STD" "$MSG" "$LOG"
 
 STATUS=printr_status
 
-if [ "$STATUS" -ne 0 ]; then
+if [ $STATUS -ne 0 ]; then
 	write_msg "LOG,STD" "Printer status is non-zero. Exiting $0." "$LOG"
 	exit
 fi
@@ -52,10 +52,10 @@ function rel {
 
     if [ $DIR = Z ]; then
 	Z_NEW=$(($Z_VAR+$DIST));
-	if [ $Z_NEW -lt "$Z_MIN" ]; then
+	if [ $Z_NEW -lt $Z_MIN ]; then
             write_msg "STD,LOG,RQ" "Refusing to move Z below 14mm. Z=14mm." "$LOG"
-            DIST=$(("$Z_MIN"-$Z_VAR))
-	    Z_NEW="$Z_MIN"
+            DIST=$(($Z_MIN - $Z_VAR))
+	    Z_NEW=$Z_MIN
 	fi
 	Z_VAR=$Z_NEW
 	write_msg "STD,LOG" "Moving Z relative: ${DIST}mm; final: ${Z_VAR}mm" "$LOG"
@@ -63,15 +63,15 @@ function rel {
     fi
     if [ $DIR = X ]; then
 	X_NEW=$(($X_VAR+$DIST));
-	if [ $X_NEW -lt "X_MIN" ]; then
+	if [ $X_NEW -lt $X_MIN ]; then
             write_msg "STD,LOG" "Refusing to move X to ${X_NEW}mm. X=0mm." "$LOG"
 	    X_NEW=0
 	    DIST=$((0-$X_VAR))
 	fi
-	if [ $X_NEW -gt "$X_MAX" ]; then
+	if [ $X_NEW -gt $X_MAX ]; then
 	    write_msg "STD,LOG" "Refusing to move X to ${X_NEW}mm. X=130mm." "$LOG"
 	    X_NEW=130
-	    DIST=$(("$X_MAX"-"$X_VAR"))
+	    DIST=$(($X_MAX-$X_VAR))
 	fi
 	X_VAR=$X_NEW
 	write_msg "STD,LOG" "Moving X relative: ${DIST}mm; final: ${X_VAR}mm" "$LOG"
@@ -79,7 +79,7 @@ function rel {
     fi
     if [ $DIR = Y ]; then
 	Y_NEW=$(($Y_VAR+$DIST));
-	if [ "$Y_NEW" -lt "$Y_MIN" ] || [ "$Y_NEW" -gt "$Y_MAX" ]; then
+	if [ $Y_NEW -lt $Y_MIN ] || [ $Y_NEW -gt $Y_MAX ]; then
 	    write_msg "STD,LOG,RQ" "Refusing to move Y to ${DIST}mm. Halting." "$LOG"
 	    exit
 	fi
@@ -117,11 +117,11 @@ function initial_z_check {
 }
 
 function servo {
-    if [ $Z_VAR -lt 14 ]; then
+    if [ $Z_VAR -lt $Z_MIN ]; then
         write_msg "STD,LOG" "not moving bar when Z too low" "$LOG"
         return
     fi
-    if [ $Z_VAR -lt 24 -a $Y_VAR -gt 115 ]; then
+    if [ $Z_VAR -lt $Z_STEP ] && [ $Y_VAR -gt $(($Y_MAX-$Y_SWING)) ]; then
 	write_msg "STD,LOG" "Not lowering the bar, Y is too high." "$LOG"
 	return
     fi
@@ -142,7 +142,7 @@ function servo {
 
 function y_push {
     reset Y
-    if [ "$Z_VAR" -lt "$Z_SWING" ]; then
+    if [ $Z_VAR -lt $Z_SWING ]; then
         rel Y "$Y_SWING"
         sleep 3s
         servo deploy
@@ -154,7 +154,7 @@ function y_push {
     servo forward
     Z_REL=5
     if [ $Z_VAR -lt 24 ]; then
-	Z_REL=$(("$Z_SWING"-"$Z_VAR"))
+	Z_REL=$(($Z_SWING-$Z_VAR))
     fi
     rel "Z" "$Z_REL"
     printr_cmd "G1 Y${Y_MAX} F5000"
@@ -166,7 +166,7 @@ function y_push {
 function x_scan {
     printr_cmd "G28 X"
     X_VAR=0
-    while [ "$X_VAR" -lt "$X_MAX" ];
+    while [ $X_VAR -lt $X_MAX ];
     do
 	write_msg "STD,LOG" "X is ${X_VAR}mm" "$LOG"
 	y_push
@@ -186,11 +186,11 @@ write_msg "STD,LOG,RQ" "Clearing print bed" "$LOG"
 $CB_DIR/fanctl.sh off
 servo store
 initial_z_check
-rel Z "6"
-while [ "$Z_VAR" -gt "$Z_MIN" ]
+rel "Z" "${Z_STEP}"
+while [ $Z_VAR -gt $Z_MIN ]
 do
     x_scan
-    rel Z "$Z_STEP"
+    rel "Z" "-${Z_STEP}"
 done
 x_scan
 write_msg "STD,LOG,RQ" "Should be done clearing print bed." "$LOG"
