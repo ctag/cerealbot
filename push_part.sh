@@ -26,7 +26,8 @@ Z_VAR=$2
 MSG="Begin push_part.sh"
 write_msg "LOG,STD" "$MSG" "$LOG"
 
-STATUS=printr_status
+printr_status
+STATUS=$?
 
 if [ $STATUS -ne 0 ]; then
 	write_msg "LOG,STD" "Printer status is non-zero. Exiting $0." "$LOG"
