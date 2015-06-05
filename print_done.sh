@@ -39,6 +39,7 @@ if [ "$TIMEOUT_ENABLED" = "true" ]; then
 fi
 
 write_msg "LOG,STD" "Deleting $FILE from server queue." "$LOG"
+resty 'http://localhost/api'
 DELETE "/files/local/$FILE"
 
 if [ "$POP_ENABLED" = "true" ]; then
@@ -47,7 +48,7 @@ else
 	write_msg "STD,LOG" "Not popping parts, disabled in config." "$LOG"
 fi
 
-if [ "$PUSH_ENABLED" = "true"]; then
+if [ "$PUSH_ENABLED" = "true" ]; then
 	$CB_DIR/push_part.sh "$FILE" "$Z_VAR"
 else
 	write_msg "STD,LOG" "Not pushing parts, disabled in config." "$LOG"
