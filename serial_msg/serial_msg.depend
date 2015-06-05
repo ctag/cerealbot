@@ -1,0 +1,8 @@
+# depslib dependency file v1.0
+1433453439 source:/home/berocs/Documents/cerealbox/serial_msg/main.c
+	<stdio.h>
+	<stdlib.h>
+	<sys/ipc.h>
+	<sys/msg.h>
+	<sys/types.h>
+
