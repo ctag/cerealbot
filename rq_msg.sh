@@ -13,11 +13,16 @@ resty 'https://crump.space/rq'
 LOG=/tmp/cb_rq_msg.log
 MSG=$1
 
-# Write to logfile
-$CB_DIR/write_msg.sh "LOG" "Writing message [$MSG] to RedQueen." "$LOG"
+if [ "$RQ_ENABLED" = "true" ]; then
+	# Write to logfile
+	$CB_DIR/write_msg.sh "LOG" "Writing message [$MSG] to RedQueen." "$LOG"
+	# Make API call
+	POST /relay "{\"message\":\"${MSG}\", \"channel\":\"##rqtest\", \
+\"isaction\":false, \"key\":\"$RQ_API_KEY\"}" >> $LOG
+else
+	$CB_DIR/write_msg.sh "LOG" "NOT writing message [$MSG] to RedQueen. Disabled in config." "$LOG"
+fi
 
-# Make API call
-POST /relay "{\"message\":\"${MSG}\", \"channel\":\"##rqtest\", \"isaction\":false, \"key\":\"$RQ_API_KEY\"}" >> $LOG
 
 
 

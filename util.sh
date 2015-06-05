@@ -3,9 +3,6 @@
 # Collection of helper functions for CerealBot
 # Source file with '. /.../util.sh'
 
-# Source config
-. /home/pi/.cerealbox/config
-
 # Accept string input and write it to irc channels
 function rq_msg {
 	$CB_DIR/rq_msg.sh "$@"

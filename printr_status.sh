@@ -9,7 +9,8 @@ RETFAIL=1
 # Setup log file
 LOG=/tmp/printr_status.log
 . /home/pi/.cerealbox/config
-. /home/pi/cerealbox/write_msg.sh
+
+. $CB_DIR/util.sh
 
 # Fetch Printer Status
 PRINTR_STATUS=`curl -H "X-Api-Key:$OCTO_API_KEY" http://bns-daedalus.256.makerslocal.org/api/printer -o /tmp/printr_status.json`

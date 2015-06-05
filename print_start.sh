@@ -6,8 +6,11 @@
 # "Locks" printer for our use
 export CB_BUSY=1
 
+# Source config
+. /home/pi/.cerealbox/config
+
 # Source helper scripts and variables
-. util.sh
+. $CB_DIR/util.sh
 
 FILE=$1
 

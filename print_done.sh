@@ -3,8 +3,11 @@
 # This script will check the status of a print
 # and have RedQueen alert me when a print is done.
 
+# Source config
+. /home/pi/.cerealbox/config
+
 # Source helper scripts and variables
-. util.sh
+. $CB_DIR/util.sh
 
 LOG=/tmp/print_done.log
 FILE=$1
@@ -28,13 +31,23 @@ write_msg "RQ,LOG" "$MSG" $LOG
 exit
 fi
 
-write_msg "LOG" "Sleeping to let buildplate cool off." "$LOG"
-#sleep 20m
+if [ "$TIMEOUT_ENABLED" = "true" ]; then
+	write_msg "LOG" "Sleeping to let buildplate cool off." "$LOG"
+	sleep 20m
+fi
 
 write_msg "LOG,STD" "Deleting $FILE from server queue." "$LOG"
 DELETE "/files/local/$FILE"
 
-$CB_DIR/pop_part.sh "$FILE" "$Z_VAR"
+if [ "$POP_ENABLED" = "true" ]; then
+	$CB_DIR/pop_part.sh "$FILE" "$Z_VAR"
+	if [ "$PUSH_ENABLED" = "true"]; then
+		sleep 1m
+		$CB_DIR/push_part.sh "$FILE" "$Z_VAR"
+	fi
+else
+	write_msg "STD,LOG" "Not popping/pushing parts, disabled in config." "$LOG"
+fi
 
 # Release flag set in print_start.sh
 export CB_BUSY=0
