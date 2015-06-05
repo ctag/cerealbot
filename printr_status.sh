@@ -8,8 +8,12 @@ RETFAIL=1
 
 # Setup log file
 LOG=/tmp/printr_status.log
-. /home/pi/.cerealbox/config
 
+
+# Source variables
+if [ ! -d "$CB_DIR" ]; then
+	CB_DIR=`dirname $0`
+fi
 . $CB_DIR/util.sh
 
 # Fetch Printer Status
