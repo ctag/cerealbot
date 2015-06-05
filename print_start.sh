@@ -4,10 +4,12 @@
 # and have ReqQueen alert me when a print is done.
 
 # "Locks" printer for our use
-export CB_BUSY=1
+export CB_BUSY=true
 
 # Source config
-. /home/pi/.cerealbox/config
+if [ ! -d "$CB_DIR" ]; then
+	CB_DIR=`dirname $0`
+fi
 
 # Source helper scripts and variables
 . $CB_DIR/util.sh

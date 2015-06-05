@@ -4,7 +4,10 @@
 # Sends one or more commands to the printrbot via API
 
 # Source variables
-. /home/pi/.cerealbox/config
+if [ ! -d "$CB_DIR" ]; then
+	CB_DIR=`dirname $0`
+fi
+. $CB_DIR/config
 
 # Set logfile
 LOG=/tmp/printr_cmd.sh

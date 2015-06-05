@@ -8,7 +8,9 @@
 #
 
 # Source config
-. /home/pi/.cerealbox/config
+if [ ! -d "$CB_DIR" ]; then
+	CB_DIR=`dirname $0`
+fi
 
 # Source common config/vars
 . $CB_DIR/util.sh

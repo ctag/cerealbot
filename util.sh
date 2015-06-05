@@ -3,6 +3,12 @@
 # Collection of helper functions for CerealBot
 # Source file with '. /.../util.sh'
 
+if [ ! -d "$CB_DIR" ]; then
+	CB_DIR=`dirname $0`
+fi
+
+. $CB_DIR/config
+
 # Accept string input and write it to irc channels
 function rq_msg {
 	$CB_DIR/rq_msg.sh "$@"
@@ -32,8 +38,6 @@ function printr_status {
 function printr_cmd {
 	$CB_DIR/printr_cmd.sh "$@"
 }
-
-
 
 
 

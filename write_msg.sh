@@ -4,7 +4,10 @@
 # Writes a message to multiple outputs
 
 # Load user defined variables
-. /home/pi/.cerealbox/config
+if [ ! -d "$CB_DIR" ]; then
+	CB_DIR=`dirname $0`
+fi
+. $CB_DIR/config
 
 # Set logfile
 LOG=/tmp/write_msg.log

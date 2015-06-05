@@ -4,7 +4,10 @@
 # Accept string input and write it to irc channels
 
 # Load user defined variables
-. /home/pi/.cerealbox/config
+if [ ! -d "$CB_DIR" ]; then
+	CB_DIR=`dirname $0`
+fi
+. $CB_DIR/config
 
 # Set resty url
 resty 'https://crump.space/rq'

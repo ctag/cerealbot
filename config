@@ -3,22 +3,25 @@
 # Config for Cerealbox scripts
 
 # Variables for printrbot scripts
-BAR_STORED=176
-BAR_DEPLOYED=120
+BAR_STORED=165
+BAR_DEPLOYED=115
 BAR_FORWARD=060
-CB_DIR=/home/pi/cerealbox
-CB_DOTDIR=/home/pi/.cerealbox
 
-# Source API keys
-. $CB_DOTDIR apis.sh
+# Declare that the dotdir is just in the same parent directory
+CB_DOTDIR=$CB_DIR/../.cerealbox
+
+# Source API keys from somewhere not sent to github
+. $CB_DOTDIR/apis.sh
 
 # Dimensions allowed for scanning the part off the build plate
 X_MIN=0
 X_MAX=130
 Y_MIN=5
 Y_MAX=145
-Z_MIN=14
+Z_MIN=15
 Z_MAX=145
+Y_SWING=-25 # Distance to move Y is bar needs to be swung
+Z_SWING=25 # If Z below this, then move Y before swinging bar
 X_STEP=25
 Z_STEP=-4
 

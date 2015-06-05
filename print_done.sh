@@ -4,7 +4,9 @@
 # and have RedQueen alert me when a print is done.
 
 # Source config
-. /home/pi/.cerealbox/config
+if [ ! -d "$CB_DIR" ]; then
+	CB_DIR=`dirname $0`
+fi
 
 # Source helper scripts and variables
 . $CB_DIR/util.sh
@@ -41,13 +43,15 @@ DELETE "/files/local/$FILE"
 
 if [ "$POP_ENABLED" = "true" ]; then
 	$CB_DIR/pop_part.sh "$FILE" "$Z_VAR"
-	if [ "$PUSH_ENABLED" = "true"]; then
-		sleep 1m
-		$CB_DIR/push_part.sh "$FILE" "$Z_VAR"
-	fi
 else
-	write_msg "STD,LOG" "Not popping/pushing parts, disabled in config." "$LOG"
+	write_msg "STD,LOG" "Not popping parts, disabled in config." "$LOG"
+fi
+
+if [ "$PUSH_ENABLED" = "true"]; then
+	$CB_DIR/push_part.sh "$FILE" "$Z_VAR"
+else
+	write_msg "STD,LOG" "Not pushing parts, disabled in config." "$LOG"
 fi
 
 # Release flag set in print_start.sh
-export CB_BUSY=0
+export CB_BUSY=false
