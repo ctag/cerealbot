@@ -46,75 +46,68 @@ function rel {
     DIR=$1
     DIST=$2
 
-    if [ $DIR != X -a $DIR != Y -a $DIR != Z ]; then
+    if [ "$DIR" != "X" ] && [ "$DIR" != "Y" ] && [ "$DIR" != "Z" ]; then
     # No valid direction, exiting
 	return
     fi
 
-    if [ $DIR = Z ]; then
-	Z_NEW=$(($Z_VAR+$DIST));
-	if [ $Z_NEW -lt $Z_MIN ]; then
-            write_msg "STD,LOG,RQ" "Refusing to move Z below 14mm. Z=14mm." "$LOG"
-            DIST=$(($Z_MIN - $Z_VAR))
-	    Z_NEW=$Z_MIN
-	fi
-	Z_VAR=$Z_NEW
-	write_msg "STD,LOG" "Moving Z relative: ${DIST}mm; final: ${Z_VAR}mm" "$LOG"
-	printr_cmd "G91" "G1 Z${DIST} F800" "G90"
+    if [ "$DIR" = "Z" ]; then
+		Z_NEW=$(($Z_VAR+$DIST));
+		if [ $Z_NEW -lt $Z_MIN ]; then
+			write_msg "STD,LOG" "Refusing to move Z by ${DIST} to ${Z_NEW}mm. Z=${Z_MIN}mm." "$LOG"
+			DIST=$(($Z_MIN - $Z_VAR))
+			Z_NEW=$Z_MIN
+		fi
+		Z_VAR=$Z_NEW
+		write_msg "STD,LOG" "Moving Z relative: ${DIST}mm; final: ${Z_VAR}mm" "$LOG"
+		printr_cmd "G91" "G1 Z${DIST} F800" "G90"
     fi
-    if [ $DIR = X ]; then
-	X_NEW=$(($X_VAR+$DIST));
-	if [ $X_NEW -lt $X_MIN ]; then
-            write_msg "STD,LOG" "Refusing to move X to ${X_NEW}mm. X=0mm." "$LOG"
-	    X_NEW=0
-	    DIST=$((0-$X_VAR))
-	fi
-	if [ $X_NEW -gt $X_MAX ]; then
-	    write_msg "STD,LOG" "Refusing to move X to ${X_NEW}mm. X=130mm." "$LOG"
-	    X_NEW=130
-	    DIST=$(($X_MAX-$X_VAR))
-	fi
-	X_VAR=$X_NEW
-	write_msg "STD,LOG" "Moving X relative: ${DIST}mm; final: ${X_VAR}mm" "$LOG"
-	printr_cmd "G91" "G1 X${DIST} F5000" "G90"
+    if [ "$DIR" = "X" ]; then
+		X_NEW=$(($X_VAR+$DIST));
+		if [ $X_NEW -lt $X_MIN ]; then
+			write_msg "STD,LOG" "Refusing to move X by ${DIST} to ${X_NEW}mm. X=${X_MIN}mm." "$LOG"
+			X_NEW=$X_MIN
+			DIST=$(($X_MIN-$X_VAR))
+		elif [ $X_NEW -gt $X_MAX ]; then
+			write_msg "STD,LOG" "Refusing to move X by ${DIST} to ${X_NEW}mm. X=${X_MAX}mm." "$LOG"
+			X_NEW=$X_MAX
+			DIST=$(($X_MAX-$X_VAR))
+		fi
+		X_VAR=$X_NEW
+		write_msg "STD,LOG" "Moving X relative: ${DIST}mm; final: ${X_VAR}mm" "$LOG"
+		printr_cmd "G91" "G1 X${DIST} F5000" "G90"
     fi
-    if [ $DIR = Y ]; then
-	Y_NEW=$(($Y_VAR+$DIST));
-	if [ $Y_NEW -lt $Y_MIN ] || [ $Y_NEW -gt $Y_MAX ]; then
-	    write_msg "STD,LOG,RQ" "Refusing to move Y to ${DIST}mm. Halting." "$LOG"
-	    exit
-	fi
-	Y_VAR=$Y_NEW
-        write_msg "STD,LOG" "Moving Y relative: ${DIST}mm; final: ${Y_VAR}mm"
-	printr_cmd "G91" "G1 Y${DIST} F5000" "G90"
+    if [ "$DIR" = "Y" ]; then
+		Y_NEW=$(($Y_VAR+$DIST));
+		if [ $Y_NEW -lt $Y_MIN ]; then
+			write_msg "STD,LOG" "Refusing to move Y by ${DIST} to ${Y_NEW}mm. Y=${Y_MIN}mm." "$LOG"
+			Y_NEW=$Y_MIN
+			DIST=$(($Y_MIN-$Y_VAR))
+		elif [ $Y_NEW -gt $Y_MAX ]; then
+			write_msg "STD,LOG" "Refusing to move Y by ${DIST} to ${Y_NEW}mm. Y=${Y_MAX}mm." "$LOG"
+			Y_NEW=$Y_MAX
+			DIST=$(($Y_MAX-$Y_VAR))
+		fi
+		Y_VAR=$Y_NEW
+		write_msg "STD,LOG" "Moving Y relative: ${DIST}mm; final: ${Y_VAR}mm"
+		printr_cmd "G91" "G1 Y${DIST} F5000" "G90"
     fi
 }
 
 function reset {
     DIR=$1
-    if [ $DIR = X ]; then
-    printr_cmd "G28 X"
-    X_VAR=0
-fi
-if [ $DIR = Y ]; then
-    printr_cmd "G28 Y"
-    Y_VAR=145
-fi
-if [ $DIR = Z ]; then
-    printr_cmd "G28 Z"
-    Z_VAR=2
-fi
-}
-
-
-function initial_z_check {
-    if [ $Z_VAR -lt $Z_MIN ]; then
-        #$CB_DIR/rq_msg.sh "Probe is below allowable servo range. Moving probe up to ${Z_MIN}mm."
-	Z_DELTA=$(($Z_MIN-$Z_VAR))
-        #$CB_DIR/rq_msg.sh "Moving probe by a delta of $Z_DELTA to reach ${Z_MIN}mm."
-	rel Z "$Z_DELTA"
-        #$CB_DIR/rq_msg.sh "New Z val: $Z_VAR"
-    fi
+    if [ "$DIR" = "X" ]; then
+		printr_cmd "G28 X"
+		X_VAR=$X_MIN
+	fi
+	if [ "$DIR" = "Y" ]; then
+		printr_cmd "G28 Y"
+		Y_VAR=$Y_MAX
+	fi
+	if [ "$DIR" = "Z" ]; then
+		printr_cmd "G28 Z"
+		Z_VAR=2
+	fi
 }
 
 function servo {
@@ -123,28 +116,27 @@ function servo {
         return
     fi
     if [ $Z_VAR -lt $Z_STEP ] && [ $Y_VAR -gt $(($Y_MAX-$Y_SWING)) ]; then
-	write_msg "STD,LOG" "Not lowering the bar, Y is too high." "$LOG"
-	return
+		write_msg "STD,LOG" "Not lowering the bar, Y is too high." "$LOG"
+		return
     fi
-    if [ $1 = "deploy" ]; then
-	write_msg "STD,LOG" "Deploying bar." "$LOG"
-	servoctl "$BAR_DEPLOYED"
+    if [ "$1" = "deploy" ]; then
+		write_msg "STD,LOG" "Deploying bar." "$LOG"
+		servoctl "$BAR_DEPLOYED"
     fi
-    if [ $1 = "store" ]; then
-	write_msg "STD,LOG" "Storing bar." "$LOG"
-	servoctl "$BAR_STORED"
+    if [ "$1" = "store" ]; then
+		write_msg "STD,LOG" "Storing bar." "$LOG"
+		servoctl "$BAR_STORED"
     fi
-    if [ $1 = "forward" ]; then
-	write_msg "STD,LOG" "Setting bar forward." "$LOG"
-	servoctl "$BAR_FORWARD"
+    if [ "$1" = "forward" ]; then
+		write_msg "STD,LOG" "Setting bar forward." "$LOG"
+		servoctl "$BAR_FORWARD"
     fi
     sleep 1s
 }
 
 function y_push {
-    reset Y
     if [ $Z_VAR -lt $Z_SWING ]; then
-        rel Y "$Y_SWING"
+        rel 'Y' "-${Y_SWING}"
         sleep 3s
         servo deploy
     else
@@ -154,8 +146,8 @@ function y_push {
     sleep 3s
     servo forward
     Z_REL=5
-    if [ $Z_VAR -lt 24 ]; then
-	Z_REL=$(($Z_SWING-$Z_VAR))
+    if [ $Z_VAR -lt $Z_SWING ]; then
+		Z_REL=$(($Z_SWING-$Z_VAR))
     fi
     rel "Z" "$Z_REL"
     printr_cmd "G1 Y${Y_MAX} F5000"
@@ -169,31 +161,32 @@ function x_scan {
     X_VAR=0
     while [ $X_VAR -lt $X_MAX ];
     do
-	write_msg "STD,LOG" "X is ${X_VAR}mm" "$LOG"
-	y_push
-	rel "X" "$X_STEP"
+		write_msg "STD,LOG" "X is ${X_VAR}mm" "$LOG"
+		y_push
+		rel "X" "$X_STEP"
     done
 }
 
 # Execute bed clearing functions
-
-resty 'http://localhost/api' 1>> $LOG
 
 reset X
 reset Y
 sleep 4s
 
 write_msg "STD,LOG,RQ" "Clearing print bed" "$LOG"
-$CB_DIR/fanctl.sh off
+$CB_DIR/fanctl.sh "off"
 servo store
 initial_z_check
-rel "Z" "${Z_STEP}"
+
+rel "Z" "$Z_STEP"
+
 while [ $Z_VAR -gt $Z_MIN ]
 do
     x_scan
     rel "Z" "-${Z_STEP}"
 done
 x_scan
+
 write_msg "STD,LOG,RQ" "Should be done clearing print bed." "$LOG"
 
 

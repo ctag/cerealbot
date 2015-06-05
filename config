@@ -23,7 +23,7 @@ Z_MAX=145
 Y_SWING=25 # Distance to move Y is bar needs to be swung
 Z_SWING=25 # If Z below this, then move Y before swinging bar
 X_STEP=25
-Z_STEP=-4
+Z_STEP=4
 
 # Toggles
 RQ_ENABLED=true

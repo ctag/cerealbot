@@ -10,7 +10,13 @@ fi
 . $CB_DIR/config
 
 # Set resty url
-resty 'https://crump.space/rq'
+api_url='https://crump.space/rq'
+# resty output like: http://localhost/api* ''
+# We want everything before the '*'
+resty_url=`resty -v | awk -F '*' '{ print $1 }'`
+if [ "$resty_url" != "$api_url" ]; then
+	resty "$api_url"
+fi
 
 # Set Logfile
 LOG=/tmp/cb_rq_msg.log

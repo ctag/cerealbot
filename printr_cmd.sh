@@ -25,5 +25,13 @@ for cmd in "$@"
 done
 
 $CB_DIR/write_msg.sh "STD,LOG" "Sending printer commands: $cmds" "$LOG"
-resty 'http://localhost/api'
+
+# Set resty url
+api_url='http://localhost/api'
+# resty output like: http://localhost/api* ''
+# We want everything before the '*'
+resty_url=`resty -v | awk -F '*' '{ print $1 }'`
+if [ "$resty_url" != "$api_url" ]; then
+resty "$api_url"
+fi
 POST /printer/command "{\"commands\":[$cmds]}"

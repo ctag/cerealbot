@@ -19,17 +19,17 @@ Z_VAR=${Z_HEIGHT%.*}
 MSG="No Status for print_done.sh. Something has broken."
 if [ "$FILE" = "cycle_hotbed.gcode" ]
 then
-MSG="End Specilized hotbed code."
+	MSG="End Specilized hotbed code."
 else
-fanctl "on"
-MSG="[${FILE}] has concluded processing at [$Z_VAR]mm. Coolant activated."
+	fanctl "on"
+	MSG="[${FILE}] has concluded processing at [$Z_VAR]mm. Coolant activated."
 fi
 
 write_msg "RQ,LOG" "$MSG" "$LOG"
 
 if [ $Z_VAR -lt 2 ]; then
-MSG="Z-HEIGHT is invalid, aborting part removal. Manual intervention required."
-write_msg "RQ,LOG" "$MSG" $LOG
+	MSG="Z-HEIGHT is invalid, aborting part removal. Manual intervention required."
+	write_msg "RQ,LOG" "$MSG" $LOG
 exit
 fi
 
@@ -39,7 +39,15 @@ if [ "$TIMEOUT_ENABLED" = "true" ]; then
 fi
 
 write_msg "LOG,STD" "Deleting $FILE from server queue." "$LOG"
-resty 'http://localhost/api'
+
+# Set resty url
+api_url='http://localhost/api'
+# resty output like: http://localhost/api* ''
+# We want everything before the '*'
+resty_url=`resty -v | awk -F '*' '{ print $1 }'`
+if [ "$resty_url" != "$api_url" ]; then
+	resty "$api_url"
+fi
 DELETE "/files/local/$FILE"
 
 if [ "$POP_ENABLED" = "true" ]; then

@@ -11,12 +11,12 @@ fi
 
 # Accept string input and write it to irc channels
 function rq_msg {
-	$CB_DIR/rq_msg.sh "$@"
+	$CB_DIR/rq_msg.sh "$@" &
 }
 
 # function to print to std, rq, and logfile
 function write_msg {
-	$CB_DIR/write_msg.sh "$@"
+	$CB_DIR/write_msg.sh "$@" &
 }
 
 # Forward arguments to servoctl.sh
