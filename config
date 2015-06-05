@@ -28,7 +28,7 @@ Z_STEP=-4
 # Toggles
 RQ_ENABLED=true
 POP_ENABLED=false
-PUSH_ENABLED=false
+PUSH_ENABLED=true
 TIMEOUT_ENABLED=false
 
 # Time for build plate to cool
