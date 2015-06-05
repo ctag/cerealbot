@@ -46,7 +46,7 @@ function cycle_hotbed {
 # Make sure fan is off
     fanctl "off"
 # Turn on hotbed to 70C
-    printr_cmd "M140 S70"
+    printr_cmd "M140 S60"
     sleep 8m
 # Turn off hotbed
     printr_cmd "M140 S0"

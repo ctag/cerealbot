@@ -52,10 +52,10 @@ function rel {
 
     if [ $DIR = Z ]; then
 	Z_NEW=$(($Z_VAR+$DIST));
-	if [ $Z_NEW -lt 14 ]; then
+	if [ $Z_NEW -lt "$Z_MIN" ]; then
             write_msg "STD,LOG,RQ" "Refusing to move Z below 14mm. Z=14mm." "$LOG"
-            DIST=$((14-$Z_VAR))
-	    Z_NEW=14
+            DIST=$(("$Z_MIN"-$Z_VAR))
+	    Z_NEW="$Z_MIN"
 	fi
 	Z_VAR=$Z_NEW
 	write_msg "STD,LOG" "Moving Z relative: ${DIST}mm; final: ${Z_VAR}mm" "$LOG"
@@ -63,15 +63,15 @@ function rel {
     fi
     if [ $DIR = X ]; then
 	X_NEW=$(($X_VAR+$DIST));
-	if [ $X_NEW -lt 0 ]; then
+	if [ $X_NEW -lt "X_MIN" ]; then
             write_msg "STD,LOG" "Refusing to move X to ${X_NEW}mm. X=0mm." "$LOG"
 	    X_NEW=0
 	    DIST=$((0-$X_VAR))
 	fi
-	if [ $X_NEW -gt 125 ]; then
+	if [ $X_NEW -gt "$X_MAX" ]; then
 	    write_msg "STD,LOG" "Refusing to move X to ${X_NEW}mm. X=130mm." "$LOG"
 	    X_NEW=130
-	    DIST=$((130-$X_VAR))
+	    DIST=$(("$X_MAX"-"$X_VAR"))
 	fi
 	X_VAR=$X_NEW
 	write_msg "STD,LOG" "Moving X relative: ${DIST}mm; final: ${X_VAR}mm" "$LOG"
@@ -79,7 +79,7 @@ function rel {
     fi
     if [ $DIR = Y ]; then
 	Y_NEW=$(($Y_VAR+$DIST));
-	if [ $Y_NEW -lt 0 ] || [ $Y_NEW -gt 140 ]; then
+	if [ "$Y_NEW" -lt "$Y_MIN" ] || [ "$Y_NEW" -gt "$Y_MAX" ]; then
 	    write_msg "STD,LOG,RQ" "Refusing to move Y to ${DIST}mm. Halting." "$LOG"
 	    exit
 	fi
@@ -107,7 +107,6 @@ fi
 
 
 function initial_z_check {
-Z_MIN=15
     if [ $Z_VAR -lt $Z_MIN ]; then
         #$CB_DIR/rq_msg.sh "Probe is below allowable servo range. Moving probe up to ${Z_MIN}mm."
 	Z_DELTA=$(($Z_MIN-$Z_VAR))
@@ -143,22 +142,22 @@ function servo {
 
 function y_push {
     reset Y
-    if [ $Z_VAR -lt 24 ]; then
-        rel Y "-30"
+    if [ "$Z_VAR" -lt "$Z_SWING" ]; then
+        rel Y "$Y_SWING"
         sleep 3s
         servo deploy
     else
         servo deploy
     fi
-    printr_cmd "G1 Y5 F5000"
+    printr_cmd "G1 Y${Y_MIN} F5000"
     sleep 3s
     servo forward
     Z_REL=5
     if [ $Z_VAR -lt 24 ]; then
-	Z_REL=$((24-$Z_VAR))
+	Z_REL=$(("$Z_SWING"-"$Z_VAR"))
     fi
-    rel Z $Z_REL
-    printr_cmd "G1 Y145 F5000"
+    rel "Z" "$Z_REL"
+    printr_cmd "G1 Y${Y_MAX} F5000"
     sleep 3s
     servo store
     rel Z "-${Z_REL}"
@@ -167,11 +166,11 @@ function y_push {
 function x_scan {
     printr_cmd "G28 X"
     X_VAR=0
-    while [ $X_VAR -lt 125 ];
+    while [ "$X_VAR" -lt "$X_MAX" ];
     do
 	write_msg "STD,LOG" "X is ${X_VAR}mm" "$LOG"
 	y_push
-	rel "X" 25
+	rel "X" "$X_STEP"
     done
 }
 
@@ -188,10 +187,10 @@ $CB_DIR/fanctl.sh off
 servo store
 initial_z_check
 rel Z "6"
-while [ $Z_VAR -gt 14 ]
+while [ "$Z_VAR" -gt "$Z_MIN" ]
 do
     x_scan
-    rel Z "-4"
+    rel Z "$Z_STEP"
 done
 x_scan
 write_msg "STD,LOG,RQ" "Should be done clearing print bed." "$LOG"
