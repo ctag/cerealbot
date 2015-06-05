@@ -16,7 +16,7 @@ cmds=""
 
 for cmd in "$@"
 	do
-	$CB_DIR/write_msg.sh "STD,LOG" "[$cmd]" "$LOG"
+	#$CB_DIR/write_msg.sh "STD,LOG" "[$cmd]" "$LOG"
 	if [ "$cmd" = "$1" ]; then
 		cmds="\"${cmd}\""
 	else

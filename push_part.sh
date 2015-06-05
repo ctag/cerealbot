@@ -176,7 +176,6 @@ sleep 4s
 write_msg "STD,LOG,RQ" "Clearing print bed" "$LOG"
 $CB_DIR/fanctl.sh "off"
 servo store
-initial_z_check
 
 rel "Z" "$Z_STEP"
 
