@@ -45,16 +45,16 @@ function cycle_hotbed {
     resty http://localhost/api
 # Make sure fan is off
     fanctl "off"
-# Turn on hotbed to 70C
+# Turn on hotbed
     printr_cmd "M140 S60"
-    sleep 8m
+    sleep 6m
 # Turn off hotbed
     printr_cmd "M140 S0"
-    sleep 2m
+    sleep 30s
     fanctl "on"
-    sleep 25m
+    sleep 20m
     fanctl "off"
-    sleep 5m
+    sleep 1m
     write_msg "STD,LOG" "Done with cycle." "$LOG"
 }
 
@@ -62,7 +62,7 @@ write_msg "RQ,STD,LOG" "Activating automatic part adherence mitigation. Please s
 cycle_hotbed
 cycle_hotbed
 cycle_hotbed
-cycle_hotbed
+#cycle_hotbed
 write_msg "STD,RQ,LOG" "Finished automatic buildplate cycling." "$LOG"
 
 

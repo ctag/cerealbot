@@ -15,7 +15,7 @@ CB_DOTDIR=$CB_DIR/../.cerealbox
 
 # Dimensions allowed for scanning the part off the build plate
 X_MIN=0
-X_MAX=130
+X_MAX=100
 Y_MIN=5
 Y_MAX=145
 Z_MIN=15
@@ -27,9 +27,9 @@ Z_STEP=4
 
 # Toggles
 RQ_ENABLED=true
-POP_ENABLED=false
+POP_ENABLED=true
 PUSH_ENABLED=true
-TIMEOUT_ENABLED=false
+TIMEOUT_ENABLED=true
 
 # Time for build plate to cool
 COOLDOWN=30
