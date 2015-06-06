@@ -138,22 +138,22 @@ function y_push {
     if [ $Z_VAR -lt $Z_SWING ]; then
         rel 'Y' "-${Y_SWING}"
         sleep 3s
-        servo deploy
-    else
-        servo deploy
     fi
+    servo deploy
     printr_cmd "G1 Y${Y_MIN} F5000"
     sleep 3s
     servo forward
-    Z_REL=5
+    Z_REL=0
     if [ $Z_VAR -lt $Z_SWING ]; then
 		Z_REL=$(($Z_SWING-$Z_VAR))
+		rel "Z" "$Z_REL"
     fi
-    rel "Z" "$Z_REL"
     printr_cmd "G1 Y${Y_MAX} F5000"
     sleep 3s
     servo store
-    rel Z "-${Z_REL}"
+    if [ $Z_REL -ne 0 ]; then
+		rel Z "-${Z_REL}"
+    fi
 }
 
 function x_scan {
