@@ -62,7 +62,7 @@ write_msg "RQ,STD,LOG" "Activating automatic part adherence mitigation. Please s
 cycle_hotbed
 cycle_hotbed
 cycle_hotbed
-#cycle_hotbed
+cycle_hotbed
 write_msg "STD,RQ,LOG" "Finished automatic buildplate cycling." "$LOG"
 
 

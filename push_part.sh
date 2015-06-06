@@ -171,7 +171,7 @@ function x_scan {
 
 reset X
 reset Y
-sleep 4s
+sleep 10s
 
 write_msg "STD,LOG,RQ" "Clearing print bed" "$LOG"
 $CB_DIR/fanctl.sh "off"
