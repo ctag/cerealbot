@@ -10,7 +10,7 @@ if [ $1 -ge 0 -a $1 -le 180 ]
 then
 SRV_CMD="..:s${1}"
 echo "Sending servo command: ${SRV_CMD}"
-echo -n $SRV_CMD >> /dev/ttyUSB0
+echo -n $SRV_CMD >> /dev/ttyAMA0
 exit
 fi
 
