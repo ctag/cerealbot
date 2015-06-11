@@ -78,7 +78,7 @@ function rel {
 		printr_cmd "G91" "G1 X${DIST} F5000" "G90"
     fi
     if [ "$DIR" = "Y" ]; then
-		Y_NEW=$(($Y_VAR+$DIST));
+		Y_NEW=$(($Y_VAR + $DIST));
 		if [ $Y_NEW -lt $Y_MIN ]; then
 			write_msg "STD,LOG" "Refusing to move Y by ${DIST} to ${Y_NEW}mm. Y=${Y_MIN}mm." "$LOG"
 			Y_NEW=$Y_MIN
@@ -131,28 +131,40 @@ function servo {
 		write_msg "STD,LOG" "Setting bar forward." "$LOG"
 		servoctl "$BAR_FORWARD"
     fi
+    if [ "$1" = "push" ]; then
+		write_msg "STD,LOG" "Setting bar to push." "$LOG"
+		servoctl "$BAR_PUSH"
+    fi
     sleep 1s
 }
 
 function y_push {
-    if [ $Z_VAR -lt $Z_SWING ]; then
-        rel 'Y' "-${Y_SWING}"
-        sleep 3s
+    if [ "$FINAL_SCAN" != 'true' ]; then
+	if [ $Z_VAR -lt $Z_SWING ]; then
+            rel "Y" "$Y_SWING"
+            sleep 3s
+	fi
+	servo deploy
     fi
-    servo deploy
     printr_cmd "G1 Y${Y_MIN} F5000"
+    Y_VAR=$Y_MIN
     sleep 3s
-    servo forward
-    Z_REL=0
-    if [ $Z_VAR -lt $Z_SWING ]; then
-		Z_REL=$(($Z_SWING-$Z_VAR))
-		rel "Z" "$Z_REL"
+    if [ "$FINAL_SCAN" != 'true' ]; then
+	servo forward
+	Z_REL=0
+	if [ $Z_VAR -lt $Z_SWING ]; then
+	    Z_REL=$(($Z_SWING-$Z_VAR))
+	    rel "Z" "$Z_REL"
+	fi
     fi
     printr_cmd "G1 Y${Y_MAX} F5000"
+    Y_VAR=$Y_MAX
     sleep 3s
-    servo store
-    if [ $Z_REL -ne 0 ]; then
-		rel Z "-${Z_REL}"
+    if [ "$FINAL_SCAN" != 'true' ]; then
+	servo store
+	if [ $Z_REL -ne 0 ]; then
+	    rel Z "-${Z_REL}"
+	fi
     fi
 }
 
@@ -165,6 +177,8 @@ function x_scan {
 		y_push
 		rel "X" "$X_STEP"
     done
+	write_msg "STD,LOG" "X is ${X_VAR}mm" "$LOG"
+ 	y_push
 }
 
 # Execute bed clearing functions
@@ -185,6 +199,23 @@ do
     rel "Z" "-${Z_STEP}"
 done
 x_scan
+FINAL_SCAN='true'
+reset X
+reset Y
+printr_cmd "G0 Z30 F400"
+Z_VAR=30
+sleep 4s
+servo push
+sleep 4s
+printr_cmd "G0 Z2 F400"
+Z_VAR=2
+x_scan
+printr_cmd "G0 Z30 F400"
+Z_VAR=30
+sleep 6s
+servo store
+Z_VAR=2
+FINAL_SCAN='false'
 
 write_msg "STD,LOG,RQ" "Should be done clearing print bed." "$LOG"
 

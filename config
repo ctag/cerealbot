@@ -3,9 +3,10 @@
 # Config for Cerealbox scripts
 
 # Variables for printrbot scripts
-BAR_STORED=165
+BAR_STORED=163
 BAR_DEPLOYED=115
-BAR_FORWARD=060
+BAR_FORWARD=030
+BAR_PUSH=075
 
 # Declare that the dotdir is just in the same parent directory
 CB_DOTDIR=$CB_DIR/../.cerealbox
@@ -18,9 +19,9 @@ X_MIN=0
 X_MAX=100
 Y_MIN=5
 Y_MAX=145
-Z_MIN=15
+Z_MIN=16
 Z_MAX=145
-Y_SWING=30 # Distance to move Y is bar needs to be swung
+Y_SWING=-30 # Distance to move Y is bar needs to be swung
 Z_SWING=25 # If Z below this, then move Y before swinging bar
 X_STEP=25
 Z_STEP=4

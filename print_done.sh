@@ -38,17 +38,16 @@ if [ "$TIMEOUT_ENABLED" = "true" ]; then
 	sleep 20m
 fi
 
-write_msg "LOG,STD" "Deleting $FILE from server queue." "$LOG"
-
+#write_msg "LOG,STD" "Deleting $FILE from server queue." "$LOG"
 # Set resty url
-api_url='http://localhost/api'
+#api_url='http://localhost/api'
 # resty output like: http://localhost/api* ''
 # We want everything before the '*'
-resty_url=`resty -v | awk -F '*' '{ print $1 }'`
-if [ "$resty_url" != "$api_url" ]; then
-	resty "$api_url"
-fi
-DELETE "/files/local/$FILE"
+#resty_url=`resty -v | awk -F '*' '{ print $1 }'`
+#if [ "$resty_url" != "$api_url" ]; then
+#	resty "$api_url"
+#fi
+#DELETE "/files/local/$FILE"
 
 if [ "$POP_ENABLED" = "true" ]; then
 	$CB_DIR/pop_part.sh "$FILE" "$Z_VAR"

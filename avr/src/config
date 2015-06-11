@@ -1,0 +1,4 @@
+export BOARD=atmega328
+export SERIALDEV=/dev/ttyAMA0
+export ARDUINO_PORT=/dev/ttyAMA0
+export ARDUINO_DIR=/usr/share/arduino
