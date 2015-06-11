@@ -40,15 +40,11 @@ write_msg "LOG,STD" "Checking file: $file" "$LOG"
 file_status=`GET "/files/local/$file"`
 echo $file_status | grep '"failure": 0' | grep '"success": 0' >> /dev/null
 if [ $? -eq 0 ]; then
-  write_msg "LOG,STD" "Printing new file: $file" "$LOG"
+  write_msg "STD,LOG,RQ" "Oh look, a new file. I suppose [$file] can be processed.." "$LOG"
   POST "/files/local/$file" '{"command":"select","print":"true"}'
-  write_msg "RQ" "Oh look, a new file. I suppose [$file] can be processed.."
-  exit
+  break
 fi
 done
-
-write_msg "RQ" "I am diligent, but the queue is empty."
-
 
 
 
