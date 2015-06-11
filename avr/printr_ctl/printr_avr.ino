@@ -1,4 +1,6 @@
 #include <Servo.h>
+// http://davidegironi.blogspot.com/2013/07/amt1001-humidity-and-temperature-sensor.html
+#include <amt1001.h>
 
 /**
  * Cereally 3D Arduino
@@ -183,6 +185,9 @@ void loop()
 		in_char = '\0';
 		
 		digitalWrite(powerLedPin, LOW);
+	}
+	if ((millis()%10000) == 0) {
+		Serial.print("t[");
 	}
 }
 
