@@ -2,17 +2,29 @@
 
 # Config for Cerealbox scripts
 
+# Set local directory variable
+if [ ! -d "$LOCAL_DIR" ]; then
+	LOCAL_DIR="$( dirname "$( readlink -f "$0" )" )"
+fi
+
+# Check if the dirs are sourced
+if [ ! -d "$UTIL_DIR" ]; then
+	. "$LOCAL_DIR/dirs"
+fi
+
+AVR_DEV=/dev/ttyAMA0
+
 # Variables for printrbot scripts
-BAR_STORED=163
-BAR_DEPLOYED=115
-BAR_FORWARD=030
+BAR_STORED=170
+BAR_DEPLOYED=120
+BAR_FORWARD=035
 BAR_PUSH=075
 
 # Declare that the dotdir is just in the same parent directory
 CB_DOTDIR=$CB_DIR/../.cerealbox
 
 # Source API keys from somewhere not sent to github
-. $CB_DOTDIR/apis.sh
+. "$CB_DOTDIR/apis"
 
 # Dimensions allowed for scanning the part off the build plate
 X_MIN=0
@@ -27,6 +39,7 @@ X_STEP=25
 Z_STEP=4
 
 # Toggles
+SERIAL_ENABLED=true
 RQ_ENABLED=true
 POP_ENABLED=true
 PUSH_ENABLED=true
@@ -35,6 +48,12 @@ TIMEOUT_ENABLED=true
 # Time for build plate to cool
 COOLDOWN=30
 
+# Number of times to cycle hotbed
+POP_CYCLES=6
+
+# Set printer busy lockfile
+LOCKFILE=/tmp/cb_busy.lck
+
 # Set up resty
-. $CB_DIR/resty
+. "$UTIL_DIR/resty"
 

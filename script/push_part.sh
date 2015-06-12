@@ -2,13 +2,18 @@
 
 # Push part off bed
 
-# Source config
-if [ ! -d "$CB_DIR" ]; then
-	CB_DIR=`dirname $0`
+# Set local directory variable
+if [ ! -d "$LOCAL_DIR" ]; then
+	LOCAL_DIR="$( dirname "$( readlink -f "$0" )" )"
+fi
+
+# Check if the dirs are sourced
+if [ ! -d "$UTIL_DIR" ]; then
+	. "$LOCAL_DIR/dirs"
 fi
 
 # Source common config/vars
-. $CB_DIR/util.sh
+. $UTIL_DIR/util
 
 # Set log file
 LOG=/tmp/push_part.log
@@ -188,7 +193,7 @@ reset Y
 sleep 10s
 
 write_msg "STD,LOG,RQ" "Clearing print bed" "$LOG"
-$CB_DIR/fanctl.sh "off"
+fanctl "off"
 servo store
 
 rel "Z" "$Z_STEP"
@@ -199,6 +204,8 @@ do
     rel "Z" "-${Z_STEP}"
 done
 x_scan
+
+function not_implemented {
 FINAL_SCAN='true'
 reset X
 reset Y
@@ -216,8 +223,8 @@ sleep 6s
 servo store
 Z_VAR=2
 FINAL_SCAN='false'
+}
 
 write_msg "STD,LOG,RQ" "Should be done clearing print bed." "$LOG"
-
 
 

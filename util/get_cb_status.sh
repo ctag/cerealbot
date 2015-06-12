@@ -6,21 +6,22 @@
 # Failure code
 RETFAIL=1
 
-# Setup log file
-LOG=/tmp/printr_status.log
-
-
-# Source variables
-if [ ! -d "$CB_DIR" ]; then
-	CB_DIR=`dirname $0`
+# Set local directory variable
+if [ ! -d "$LOCAL_DIR" ]; then
+	LOCAL_DIR="$( dirname "$( readlink -f "$0" )" )"
 fi
-. $CB_DIR/util.sh
+
+# Check if the dirs are sourced
+if [ ! -d "$UTIL_DIR" ]; then
+	. "$LOCAL_DIR/dirs"
+fi
+
+. $LOCAL_DIR/config
 
 # Fetch Printer Status
 PRINTR_STATUS=`curl -H "X-Api-Key:$OCTO_API_KEY" http://bns-daedalus.256.makerslocal.org/api/printer -o /tmp/printr_status.json`
 if [ $? -ne 0 ]; then
-    MSG="Status failed, exiting."
-    write_msg "LOG,STD" $MSG
+    echo "Status failed, exiting."
     exit "$RETFAIL"
 fi
 
@@ -29,23 +30,23 @@ fi
 # Check printer state
 cat /tmp/printr_status.json | grep "\"state\": 5,"
 PTR_ST=$?
-write_msg "STD,LOG" "Printer state: $PTR_ST"
+echo "Printer state: $PTR_ST"
 if [ $PTR_ST -eq 1 ]; then
-    write_msg "STD,LOG" "Exiting due to printer state."
+    echo "Exiting due to printer state."
     exit "$RETFAIL"
 else
-    write_msg "STD,LOG" "Printer reports state 5."
+    echo "Printer reports state 5."
 fi
 
 # Check that printer is Operational
 cat /tmp/printr_status.json | grep "\"stateString\": \"Operational\","
 PTR_OP=$?
-echo "`date`: Printer operational: $PTR_OP" >> $LOG
+echo "`date`: Printer operational: $PTR_OP"
 if [ $PTR_OP -eq 1 ]; then
-    write_msg "STD,LOG" "Exiting due to printer operational string."
+    echo "Exiting due to printer operational string."
     exit "$RETFAIL"
 else
-    write_msg "STD,LOG" "Printer reports operational status."
+    echo "Printer reports operational status."
 fi
 
 exit 0

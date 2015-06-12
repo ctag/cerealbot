@@ -3,11 +3,17 @@
 # Helper script
 # Sends one or more commands to the printrbot via API
 
-# Source variables
-if [ ! -d "$CB_DIR" ]; then
-	CB_DIR=`dirname $0`
+# Set local directory variable
+if [ ! -d "$LOCAL_DIR" ]; then
+	LOCAL_DIR="$( dirname "$( readlink -f "$0" )" )"
 fi
-. $CB_DIR/config
+
+# Check if the dirs are sourced
+if [ ! -d "$UTIL_DIR" ]; then
+	. "$LOCAL_DIR/dirs"
+fi
+
+. $UTIL_DIR/config
 
 # Set logfile
 LOG=/tmp/printr_cmd.sh
@@ -24,7 +30,7 @@ for cmd in "$@"
 	fi
 done
 
-$CB_DIR/write_msg.sh "STD,LOG" "Sending printer commands: $cmds" "$LOG"
+$UTIL_DIR/write_msg.sh "STD,LOG" "Sending printer commands: $cmds" "$LOG"
 
 # Set resty url
 api_url='http://localhost/api'

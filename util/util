@@ -1,42 +1,45 @@
 #!/bin/bash
 
 # Collection of helper functions for CerealBot
-# Source file with '. /.../util.sh'
 
-if [ ! -d "$CB_DIR" ]; then
-	CB_DIR=`dirname $0`
+if [ ! -d "$LOCAL_DIR" ]; then
+	LOCAL_DIR=`dirname $0`
 fi
 
-. $CB_DIR/config
+if [ ! -d "$UTIL_DIR" ]; then
+	. "$LOCAL_DIR/dirs"
+fi
+
+. $UTIL_DIR/config
 
 # Accept string input and write it to irc channels
 function rq_msg {
-	$CB_DIR/rq_msg.sh "$@" &
+	$UTIL_DIR/send_rq_msg.sh "$@"
 }
 
 # function to print to std, rq, and logfile
 function write_msg {
-	$CB_DIR/write_msg.sh "$@" &
+	$UTIL_DIR/write_msg.sh "$@"
 }
 
 # Forward arguments to servoctl.sh
 function servoctl {
-	$CB_DIR/servoctl.sh "$@"
+	$UTIL_DIR/set_servo.sh "$@"
 }
 
 # Forward arguments to fanctl.sh
 function fanctl {
-	$CB_DIR/fanctl.sh "$@"
+	$UTIL_DIR/set_fan.sh "$@"
 }
 
 # Forward arguments to printr_status.sh
 function printr_status {
-	$CB_DIR/printr_status.sh "$@"
+	$UTIL_DIR/get_cb_status.sh "$@"
 }
 
 # Forward arguments to printr_cmd.sh
 function printr_cmd {
-	$CB_DIR/printr_cmd.sh "$@"
+	$UTIL_DIR/send_cb_cmd.sh "$@"
 }
 
 

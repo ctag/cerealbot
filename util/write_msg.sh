@@ -3,11 +3,17 @@
 # Helper script
 # Writes a message to multiple outputs
 
-# Load user defined variables
-if [ ! -d "$CB_DIR" ]; then
-	CB_DIR=`dirname $0`
+# Set local directory variable
+if [ ! -d "$LOCAL_DIR" ]; then
+	LOCAL_DIR="$( dirname "$( readlink -f "$0" )" )"
 fi
-. $CB_DIR/config
+
+# Check if the dirs are sourced
+if [ ! -d "$UTIL_DIR" ]; then
+	. "$LOCAL_DIR/dirs"
+fi
+
+. $UTIL_DIR/config
 
 # Set logfile
 LOG=/tmp/write_msg.log
@@ -40,7 +46,7 @@ esac
 # Check for RedQueen output
 case "$METHOD" in
 *RQ*)
-	$CB_DIR/rq_msg.sh "[CB]: $MSG"
+	$UTIL_DIR/send_rq_msg.sh "[CB]: $MSG"
 ;;
 esac
 

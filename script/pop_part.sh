@@ -1,19 +1,23 @@
 #!/bin/bash
 
-#
 # This script is called after a part has been printed
 # If the printer status is agreeable, it will then
 # do things.
 # Christopher Bero [bigbero@gmail.com]
 #
 
-# Source config
-if [ ! -d "$CB_DIR" ]; then
-	CB_DIR=`dirname $0`
+# Set local directory variable
+if [ ! -d "$LOCAL_DIR" ]; then
+	LOCAL_DIR="$( dirname "$( readlink -f "$0" )" )"
+fi
+
+# Check if the dirs are sourced
+if [ ! -d "$UTIL_DIR" ]; then
+	. "$LOCAL_DIR/dirs"
 fi
 
 # Source common config/vars
-. $CB_DIR/util.sh
+. $UTIL_DIR/util
 
 # Set log file
 LOG=/tmp/pop_part.log
@@ -59,10 +63,10 @@ function cycle_hotbed {
 }
 
 write_msg "RQ,STD,LOG" "Activating automatic part adherence mitigation. Please stand clear." "$LOG"
-cycle_hotbed
-cycle_hotbed
-cycle_hotbed
-cycle_hotbed
+for cycle in {1..${POP_CYCLES}}
+do
+	cycle_hotbed
+done
 write_msg "STD,RQ,LOG" "Finished automatic buildplate cycling." "$LOG"
 
 
