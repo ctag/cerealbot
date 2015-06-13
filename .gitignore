@@ -1,6 +1,5 @@
 .build/
 .build/*
-lib/
 bin/
 Debug/
 build-cli/
