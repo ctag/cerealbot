@@ -4,3 +4,7 @@ lib/
 bin/
 Debug/
 build-cli/
+
+# PlatformIO
+.pioenvs/
+.scons*
