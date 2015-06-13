@@ -3,17 +3,20 @@
 # This script is a cron job
 # It will look for unprinted files and print them
 
-LOG=/tmp/do_proc_q.log
+# Set local directory variable
+if [ ! -d "$LOCAL_DIR" ]; then
+	LOCAL_DIR="$( dirname "$( readlink -f "$0" )" )"
+fi
 
-# Set local directory
-LOCAL_DIR=`dirname $0`
-
-# Source directories
-. $LOCAL_DIR/dirs
+# Check if the dirs are sourced
+if [ ! -d "$UTIL_DIR" ]; then
+	. "$LOCAL_DIR/dirs"
+fi
 
 # Source helper functions
 . $UTIL_DIR/util
 
+LOG=/tmp/do_proc_q.log
 
 function check_status {
 printr_status
@@ -36,7 +39,7 @@ check_status
 
 write_msg "LOG,STD" "Printer appears to be free, looking for something to print." "$LOG"
 
-. resty
+. "$UTIL_DIR/resty"
 
 resty http://localhost/api >> /dev/null
 
@@ -51,8 +54,4 @@ if [ $? -eq 0 ]; then
   break
 fi
 done
-
-
-
-
 

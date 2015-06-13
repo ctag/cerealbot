@@ -9,16 +9,26 @@
 # - Push off the part
 #
 
-# Set the local directory
-LOCAL_DIR=`dirname $0`
+# Set local directory variable
+if [ ! -d "$LOCAL_DIR" ]; then
+	LOCAL_DIR="$( dirname "$( readlink -f "$0" )" )"
+fi
 
-# Source directories
-. $LOCAL_DIR/dirs
+# Check if the dirs are sourced
+if [ ! -d "$UTIL_DIR" ]; then
+	. "$LOCAL_DIR/dirs"
+fi
 
 # Source helper scripts and variables
 . $UTIL_DIR/util
 
 LOG=/tmp/print_done.log
+
+# Validate correct number of inputs
+if [ -z $1 ] || [ -z $2 ]; then
+	write_msg "STD,LOG" "Wrong number of inputs. Exiting." "$LOG"
+fi
+
 FILE=$1
 Z_HEIGHT=$2
 Z_VAR=${Z_HEIGHT%.*}
