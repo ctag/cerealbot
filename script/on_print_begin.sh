@@ -6,11 +6,15 @@
 # - Send a message to RedQueen
 #
 
-# Set local directory
-LOCAL_DIR=`dirname $0`
+# Set local directory variable
+if [ ! -d "$LOCAL_DIR" ]; then
+	LOCAL_DIR="$( dirname "$( readlink -f "$0" )" )"
+fi
 
-# Source directory paths
-. $LOCAL_DIR/dirs
+# Check if the dirs are sourced
+if [ ! -d "$UTIL_DIR" ]; then
+	. "$LOCAL_DIR/dirs"
+fi
 
 # Source helper scripts and variables
 . $UTIL_DIR/util

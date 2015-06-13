@@ -21,6 +21,7 @@ echo Turning on the fan.
 echo -n ..:fi >> "$AVR_DEV"
 exit
 fi
+
 if [ $1 == off ]
 then
 echo Turning off the fan.
