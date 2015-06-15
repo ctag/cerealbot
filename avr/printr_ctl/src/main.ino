@@ -76,7 +76,7 @@ void setup()
 
 void reset_buffer ()
 {
-	Serial.println("\n\rClearing input buffer.");
+	//Serial.println("Clearing input buffer.");
 	buffer_index = 0;
 	for (buffer_index = 0; buffer_index < BUF_LEN; ++buffer_index)
 	{
@@ -87,28 +87,32 @@ void reset_buffer ()
 
 void process_buffer()
 {
+	Serial.println(in_buffer);
 	//Serial.print(" Processing input buffer: ");
-	if (strcmp(in_buffer, ":fi") == 0)
+	if (strcmp(in_buffer, "fan on") == 0)
 	{
 		Serial.println("Turning fan ON.");
 		digitalWrite(fanPin, LOW);
 		reset_buffer();
 	}
-	else if (strcmp(in_buffer, ":fo") == 0)
+	else if (strcmp(in_buffer, "fan off") == 0)
 	{
 		Serial.println("Turning fan OFF.");
 		digitalWrite(fanPin, HIGH);
 		reset_buffer();
 	}
-	else if (strstr(in_buffer, ":s") != NULL && strlen(in_buffer) == 5)
+	else if (strcmp(in_buffer, "ac status") == 0) {
+		Serial.println(analogRead(acPin));
+	}
+	else if (strstr(in_buffer, "servo") != NULL)
 	{
 		Serial.println("Checking for servo command.");
 		char tmp_val[3];
-		tmp_val[0] = in_buffer[2];
-		tmp_val[1] = in_buffer[3];
-		tmp_val[2] = in_buffer[4];
+		tmp_val[0] = in_buffer[6];
+		tmp_val[1] = in_buffer[7];
+		tmp_val[2] = in_buffer[8];
 		int servo_val = atoi(tmp_val);
-		Serial.print("Servo val: ");
+		//Serial.print("Servo val: ");
 		Serial.println(servo_val);
 		if (servo_val >= 0 && servo_val <= 180)
 		{
@@ -127,20 +131,30 @@ void loop()
 	if (Serial.available())
 	{
 		in_char = Serial.read();
+		Serial.print(in_char);
+		
+		if (in_char == '\r') {
+			Serial.print("\n");
+		}
 		
 		switch (state) {
 			case 0:
 				if (in_char == ':') {
 					reset_buffer();
 					state = 1;
+					//Serial.("\n\r:");
 				}
 			break;
 			case 1:
-				if (in_char == '\n' || buffer_index == BUF_LEN) {
+				//Serial.print(in_char);
+				if (in_char == '\n' || in_char == '\r' || buffer_index == BUF_LEN) {
+					//Serial.print("\n\r");
 					process_buffer();
 					state = 0;
+				} else if (in_char == ':') {
+					reset_buffer();
+					state = 1;
 				} else {
-					Serial.print(in_char);
 					in_buffer[buffer_index++] = in_char;
 				}
 			break;
@@ -149,6 +163,7 @@ void loop()
 				state=0;
 			break;
 		}
+		
 		in_char = '\0';
 	}
 }
