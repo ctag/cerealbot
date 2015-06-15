@@ -106,7 +106,7 @@ void down_servo ()
 
 void reset_buffer ()
 {
-	Serial.println(" Clearing input buffer.");
+	Serial.println(" Clearing input buffer, 2.");
 	buffer_index = 0;
 	for (buffer_index = 0; buffer_index < BUF_LEN; ++buffer_index)
 	{
