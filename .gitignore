@@ -7,3 +7,6 @@ build-cli/
 # PlatformIO
 .pioenvs/
 .scons*
+
+# python
+venv/
