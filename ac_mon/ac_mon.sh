@@ -18,16 +18,35 @@ fi
 # Setup virtualenv
 . $LOCAL_DIR/venv/bin/activate
 
+RET=$(python $LOCAL_DIR/ac_mon.py $AVR_DEV)
+
+echo "Return status: $RET"
+
+MSG="Testing cron job; "
+
+if [ $RET -eq 1 ]; then
+	MSG+="Fablab ac bucket is full!"
+else
+	MSG+="Fablab ac bucket is not full."
+fi
+
+write_msg "RQ" "$MSG"
+
+deactivate
+
+function check_port {
+echo "Checking $AVR_DEV against"
 # Check that the right serial port is available
 python -m serial.tools.list_ports | while read -r port
 do
-    if [ $AVR_DEV = $port ]; then
+    echo "$port"
+    if [ "$AVR_DEV" = "$port" ]; then
         # The right device exists, check's good
         python $LOCAL_DIR/ac_mon.py
         deactivate
         exit
     fi
 done
-
+}
 
 
