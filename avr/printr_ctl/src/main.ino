@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #include <Servo.h>
 // http://davidegironi.blogspot.com/2013/07/amt1001-humidity-and-temperature-sensor.html
 #include <amt1001.h>
@@ -9,15 +10,12 @@
 
 /**
  * Working Commands
- * :f - FAN
- * :fo - Fan OFF
- * :fi - Fan ON
- *
- * :s - SERVO
- * :sNNN - Set servo to NNN degrees
- */
- 
-/**
+ * :f - Fan
+ *  :fo - Fan OFF
+ *  :fi - Fan ON
+ * :s - Servo
+ *  :sNNN - Set servo to NNN degrees
+ * 
  * TODO
  * - Set up fan and servo status reporting
  */
@@ -25,30 +23,31 @@
 /**
  * Definitions
  */
-const unsigned short int BUF_LEN = 5;
+const unsigned short int BUF_LEN = 32;
 
 /**
  * Global Variables
  */
 char in_char = '\0';
-char in_buffer[BUF_LEN+1] = "000";
-unsigned short int buffer_index = 0;
+char in_buffer[BUF_LEN+1];
+unsigned short buffer_index = 0;
 Servo servoPopbar;
-Servo servoSweeper;
-unsigned int popbarUp = 170;
-unsigned int popbarDown = 10;
-unsigned int popbarMiddle = 90;
-unsigned int sweeperStored = 160;
-unsigned int sweeperAction = 70;
+short int state = 0; // Current state for reading serial input.
+
+/* Serial State Machine
+ * 0: Out of state, discard. ':' -> go to 1.
+ * 1: Record command. '\n' -> go to 2.
+ * 2: Process command and go to 0.
+ */
 
 /**
  * Pin Mappings
  */
-short fanPin = 3;
-short popbarPin = 9;
-short sweeperPin = 10;
-short resetPin = 11;
-short powerLedPin = 13;
+short fanPin = 3; // Relay trigger for hotbed fans
+short popbarPin = 9; // PWM pin for servo mounted to printer extruder
+short acPin = A2; // AC bucket water sensor
+short humPin = A0; // Humidity sensor
+short tempPin = A1; // Temperature sensor
 
 /**
  * Function prototypes
@@ -57,24 +56,16 @@ void reset_buffer ();
 
 void setup()
 {
-	pinMode(resetPin, OUTPUT);
-	digitalWrite(resetPin, LOW);
-	
 	pinMode(fanPin, OUTPUT);
 	digitalWrite(fanPin, LOW);
 	
-	pinMode(powerLedPin, OUTPUT);
-	digitalWrite(powerLedPin, HIGH);
-	
-	pinMode(A0, INPUT);
+	pinMode(humPin, INPUT);
+	pinMode(tempPin, INPUT);
+	pinMode(acPin, INPUT);
 	
 	Serial.begin(9600);
 	
 	servoPopbar.attach(popbarPin);
-	servoPopbar.write(popbarMiddle);
-	
-	servoSweeper.attach(sweeperPin);
-	servoSweeper.write(sweeperStored);
 	
 	delay(50);
 	
@@ -83,30 +74,9 @@ void setup()
 	delay(50);
 }
 
-void reset_printer ()
-{
-	digitalWrite(resetPin, HIGH);
-	delay(2000);
-	digitalWrite(resetPin, LOW);
-}
-
-void up_servo ()
-{
-	servoPopbar.write(popbarUp);
-	delay(2000);
-	servoPopbar.write(popbarMiddle);
-}
-
-void down_servo ()
-{
-	servoPopbar.write(popbarDown);
-	delay(2000);
-	servoPopbar.write(popbarMiddle);
-}
-
 void reset_buffer ()
 {
-	Serial.println(" Clearing input buffer, 2.");
+	Serial.println("\n\rClearing input buffer.");
 	buffer_index = 0;
 	for (buffer_index = 0; buffer_index < BUF_LEN; ++buffer_index)
 	{
@@ -156,38 +126,30 @@ void loop()
 {
 	if (Serial.available())
 	{
-		digitalWrite(powerLedPin, HIGH);
-		
 		in_char = Serial.read();
 		
-		//Serial.print("Recieved [");
-		Serial.print(in_char);
-		//Serial.println("]");
-		
-		if (in_char == '.' || in_char == '\n' || in_char == '\0') 
-		{
-			reset_buffer();
-		}
-		else if (buffer_index < BUF_LEN)
-		{
-			if (in_char == ':')
-			{
-				buffer_index = 0;
-			}
-			in_buffer[buffer_index] = in_char;
-			++buffer_index;
-			process_buffer();
-		}
-		else 
-		{
-			reset_buffer();
+		switch (state) {
+			case 0:
+				if (in_char == ':') {
+					reset_buffer();
+					state = 1;
+				}
+			break;
+			case 1:
+				if (in_char == '\n' || buffer_index == BUF_LEN) {
+					process_buffer();
+					state = 0;
+				} else {
+					Serial.print(in_char);
+					in_buffer[buffer_index++] = in_char;
+				}
+			break;
+			default:
+				Serial.println("Error, switch encountered default case.");
+				state=0;
+			break;
 		}
 		in_char = '\0';
-		
-		digitalWrite(powerLedPin, LOW);
-	}
-	if ((millis()%10000) == 0) {
-		Serial.print("t[");
 	}
 }
 
