@@ -1,0 +1,8 @@
+# Source this into scripts
+# This file will navigate the project based on $LOCAL_DIR
+# and load new variables to use
+
+CB_DIR="$( dirname "$LOCAL_DIR" )"
+SCRIPT_DIR="$CB_DIR/script"
+UTIL_DIR="$CB_DIR/util"
+AC_DIR="$CB_DIR/ac_mon"
