@@ -13,7 +13,7 @@ echo "All: $@"
 temp=$1
 hum=$2
 echo "Loading: $temp $hum"
-if [ $t_data == "[" ]; then
+if [ $t_data == "temp_data=[" ]; then
 t_data+="$temp"
 h_data+="$hum"
 else
