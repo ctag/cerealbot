@@ -1,0 +1,49 @@
+<!doctype html>
+<HTML>
+<HEAD>
+<meta charset='utf-8'>
+<title>Cerealbot's Environment Monitor</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js"></script>
+<script src="data.js"></script>
+</HEAD>
+
+<BODY style="background:#333">
+
+<canvas id="envchart" width="500" height="200"></canvas>
+
+<script>
+if (typeof(data) !== 'object') {
+data = {
+    labels: [65, 59, 80, 81, 56, 55, 45, 59, 80, 81, 56, 55],
+    datasets: [
+        {
+            label: "My First dataset",
+            fillColor: "rgba(220,220,220,0.2)",
+            strokeColor: "rgba(220,220,220,1)",
+            pointColor: "rgba(220,220,220,1)",
+            pointStrokeColor: "#fff",
+            pointHighlightFill: "#fff",
+            pointHighlightStroke: "rgba(220,220,220,1)",
+            data: [65, 59, 80, 81, 56, 55, 45, 59, 80, 81, 56, 55]
+        },
+        {
+            label: "My Second dataset",
+            fillColor: "rgba(151,187,205,0.2)",
+            strokeColor: "rgba(151,187,205,1)",
+            pointColor: "rgba(151,187,205,1)",
+            pointStrokeColor: "#fff",
+            pointHighlightFill: "#fff",
+            pointHighlightStroke: "rgba(151,187,205,1)",
+            data: [28, 48, 40, 19, 86, 27, 90]
+        }
+    ]
+};
+}
+// Get the context of the canvas element we want to select
+var ctx = document.getElementById("envchart").getContext("2d");
+var chart = new Chart(ctx).Line(data);
+
+</script>
+
+</BODY>
+</HTML>
