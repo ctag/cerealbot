@@ -10,11 +10,11 @@
 
 /**
  * Working Commands
- * :f - Fan
- *  :fo - Fan OFF
- *  :fi - Fan ON
- * :s - Servo
- *  :sNNN - Set servo to NNN degrees
+ * [fi] fan on
+ * [fo] fan off
+ * [t] temp
+ * [h] hum
+ * [s000] servo 000
  * 
  * TODO
  * - Set up fan and servo status reporting
@@ -100,7 +100,7 @@ void process_buffer(bool loud = false)
 	else if (strcmp(in_buffer, "temp val") == 0 || strcmp(in_buffer, "tv") == 0) {
 		Serial.println(analogRead(tempPin));
 	}
-	else if (strcmp(in_buffer, "temp") == 0 || strcmp(in_buffer, "t") == 0) {
+	else if (strcmp(in_buffer, "temp") == 0 || in_buffer[0] == 't') {
 		uint16_t step = analogRead(tempPin);
 		uint16_t temperature = amt1001_gettemperature(step);
 		Serial.println(temperature);
@@ -108,19 +108,25 @@ void process_buffer(bool loud = false)
 	else if (strcmp(in_buffer, "hum val") == 0 || strcmp(in_buffer, "hv") == 0) {
 		Serial.println(analogRead(humPin));
 	}
-	else if (strcmp(in_buffer, "hum") == 0 || strcmp(in_buffer, "h") == 0) {
+	else if (strcmp(in_buffer, "hum") == 0 || in_buffer[0] == 'h') {
 		int step = analogRead(humPin);
 		double volt = (double)step * (5.0 / 1023.0);
 		uint16_t humidity = amt1001_gethumidity(volt);
 		Serial.println(humidity);
 	}
-	else if (strstr(in_buffer, "servo") != NULL)
+	else if (strstr(in_buffer, "servo ") != NULL || in_buffer[0] == 's')
 	{
 		if (loud) Serial.println("Checking for servo command.");
 		char tmp_val[3];
-		tmp_val[0] = in_buffer[6];
-		tmp_val[1] = in_buffer[7];
-		tmp_val[2] = in_buffer[8];
+		if (strlen(in_buffer) > 4) {
+			tmp_val[0] = in_buffer[6];
+			tmp_val[1] = in_buffer[7];
+			tmp_val[2] = in_buffer[8];
+		} else {
+			tmp_val[0] = in_buffer[1];
+			tmp_val[1] = in_buffer[2];
+			tmp_val[2] = in_buffer[3];
+		}
 		int servo_val = atoi(tmp_val);
 		if (loud) {
 			Serial.print("\n\rServo val: ");
