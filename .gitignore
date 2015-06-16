@@ -3,6 +3,7 @@
 bin/
 Debug/
 build-cli/
+data/
 
 # PlatformIO
 .pioenvs/
