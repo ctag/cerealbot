@@ -4,12 +4,19 @@
 <meta charset='utf-8'>
 <title>Cerealbot's Environment Monitor</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js"></script>
+<script src="http://code.jquery.com/jquery-2.1.4.min.js"></script>
 <script src="data.js"></script>
+<script src="last_reading.js"></script>
 </HEAD>
 
-<BODY style="background:#333">
+<BODY style="width: 100%; height: 100%; background: #222;">
 
-<canvas id="envchart" width="500" height="200"></canvas>
+<div style="width: 100%; height: 100%; color: #FF6666; align: center; text-align: center; padding-top: 50px;">
+FabLab Environment
+<br>
+<canvas id="envchart" width="800" height="300" style="margin: 0 auto; display: inline;"></canvas>
+<div id="latest" sylte="margin: auto;"></div>
+</div>
 
 <script>
 if (typeof(data) !== 'object') {
@@ -39,6 +46,10 @@ data = {
     ]
 };
 }
+
+// Load latest dataset
+$('#latest').html("["+time+"] \t ["+temp+" C] \t ["+hum+" %]");
+
 // Get the context of the canvas element we want to select
 var ctx = document.getElementById("envchart").getContext("2d");
 var chart = new Chart(ctx).Line(data);

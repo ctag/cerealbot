@@ -26,12 +26,18 @@ HOUR=`date +%H`
 DATA_DIR="${LOCAL_DIR}/data/${YEAR}/${MONTH}/${DAY}"
 DATA_FILE="${DATA_DIR}/${HOUR}"
 
+echo "Writing to: ${DATA_FILE}"
+
 mkdir -p "$DATA_DIR"
 
 echo "${TEMP} ${HUM}" > "$DATA_FILE"
 
-echo "Temp: $TEMP"
-echo " Hum: $HUM"
+LONGTIME=`date +%c`
+LR=$LOCAL_DIR/last_reading.js
+
+echo "time=\"${LONGTIME}\";" > $LR
+echo "temp=${TEMP};" >> $LR
+echo "hum=${HUM};" >> $LR
 exit
 
 if [ $RET -eq 0 ] && [ $VAL -eq 0 ]; then
