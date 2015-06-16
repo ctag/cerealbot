@@ -1,2 +1,2 @@
 #!/bin/bash
-rsync -rvz . bns-daedalus:/home/pi/cerealbox
+rsync -rvz --exclude '{data.js,data/*,last_reading.js}' . bns-daedalus:/home/pi/cerealbox

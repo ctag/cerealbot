@@ -1,60 +1,68 @@
 <!doctype html>
 <HTML>
+
 <HEAD>
-<meta charset='utf-8'>
-<title>Cerealbot's Environment Monitor</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js"></script>
-<script src="http://code.jquery.com/jquery-2.1.4.min.js"></script>
-<script src="data.js"></script>
-<script src="last_reading.js"></script>
+  <meta charset='utf-8'>
+  <title>Cerealbot's Environment Monitor</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js"></script>
+  <script src="http://code.jquery.com/jquery-2.1.4.min.js"></script>
+  <script src="data.js"></script>
+  <script src="last_reading.js"></script>
 </HEAD>
 
 <BODY style="width: 100%; height: 100%; background: #222;">
 
-<div style="width: 100%; height: 100%; color: #FF6666; align: center; text-align: center; padding-top: 50px;">
-FabLab Environment
-<br>
-<canvas id="envchart" width="800" height="300" style="margin: 0 auto; display: inline;"></canvas>
-<div id="latest" sylte="margin: auto;"></div>
-</div>
+  <div style="width: 100%; height: 100%; color: #FF6666; align: center; text-align: center; padding-top: 50px;">
+    FabLab Environment
+    <br>
+    <canvas id="envchart" width="800" height="300" style="margin: 0 auto; display: inline;"></canvas>
+    <div id="latest" sylte="margin: auto;"></div>
+  </div>
 
-<script>
-if (typeof(temp_data) !== 'object') {
-data = {
-    labels: [65, 59, 80, 81, 56, 55, 45, 59, 80, 81, 56, 55],
-    datasets: [
-        {
-            label: "My First dataset",
-            fillColor: "rgba(220,220,220,0.2)",
-            strokeColor: "rgba(220,220,220,1)",
-            pointColor: "rgba(220,220,220,1)",
-            pointStrokeColor: "#fff",
-            pointHighlightFill: "#fff",
-            pointHighlightStroke: "rgba(220,220,220,1)",
-            data: [65, 59, 80, 81, 56, 55, 45, 59, 80, 81, 56, 55]
-        },
-        {
-            label: "My Second dataset",
-            fillColor: "rgba(151,187,205,0.2)",
-            strokeColor: "rgba(151,187,205,1)",
-            pointColor: "rgba(151,187,205,1)",
-            pointStrokeColor: "#fff",
-            pointHighlightFill: "#fff",
-            pointHighlightStroke: "rgba(151,187,205,1)",
-            data: [28, 48, 40, 19, 86, 27, 90]
-        }
-    ]
-};
-}
+  <script>
+  //console.log(typeof(temp_data));
+    if (typeof(temp_data) !== 'object') {
+      temp_data = [0,0];
+    }
+    if (typeof(hum_data) !== 'object') {
+      hum_data = [0,0];
+    }
+    hours = [];
+    for (var _index = 0; _index < temp_data.length; _index++) {
+      hours[_index] = temp_data.lenth - _index;
+    }
 
-// Load latest dataset
-$('#latest').html("["+time+"] \t ["+temp+" C] \t ["+hum+" %]");
+    var data = {
+      labels: hours,
+      datasets: [{
+        label: "Temperature",
+        fillColor: "rgba(220,220,220,0.2)",
+        strokeColor: "rgba(220,220,220,1)",
+        pointColor: "rgba(220,220,220,1)",
+        pointStrokeColor: "#fff",
+        pointHighlightFill: "#fff",
+        pointHighlightStroke: "rgba(220,220,220,1)",
+        data: temp_data
+      }, {
+        label: "Humidity",
+        fillColor: "rgba(151,187,205,0.2)",
+        strokeColor: "rgba(151,187,205,1)",
+        pointColor: "rgba(151,187,205,1)",
+        pointStrokeColor: "#fff",
+        pointHighlightFill: "#fff",
+        pointHighlightStroke: "rgba(151,187,205,1)",
+        data: hum_data
+      }]
+    };
 
-// Get the context of the canvas element we want to select
-var ctx = document.getElementById("envchart").getContext("2d");
-var chart = new Chart(ctx).Line(data);
+    // Load latest dataset
+    $('#latest').html("[" + time + "] \t [" + temp + " C] \t [" + hum + " %]");
 
-</script>
+    // Get the context of the canvas element we want to select
+    var ctx = document.getElementById("envchart").getContext("2d");
+    var chart = new Chart(ctx).Line(data);
+  </script>
 
 </BODY>
+
 </HTML>
