@@ -52,6 +52,6 @@ done # hour
 t_data+="];"
 h_data+="];"
 
-echo "$t_data" > data.js 
-echo "$h_data" >> data.js
+echo "$t_data" > $LOCAL_DIR/data.js 
+echo "$h_data" >> $LOCAL_DIR/data.js
 

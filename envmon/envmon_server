@@ -18,7 +18,7 @@ case "$1" in
     # example 1 - system service
     # /usr/bin/foobar --config /etc/foo.conf start
 
-    /home/pi/cerealbox/envmon/start_server.sh >> /dev/null
+    /home/pi/cerealbox/envmon/start_server.sh >> /dev/null &
 
     # example 2 - run script as user
     # su --login mkaz --command "/home/mkaz/bin/my-script --cmd-args"

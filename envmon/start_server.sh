@@ -14,7 +14,7 @@ cd $LOCAL_DIR
 # Setup virtualenv
 . $LOCAL_DIR/venv/bin/activate
 
-python -m SimpleHTTPServer 8001 & echo $! > /tmp/envmon_server.pid
+python -m SimpleHTTPServer 8081 & echo $! > /tmp/envmon_server.pid
 
 deactivate
 

@@ -2,10 +2,20 @@ import serial
 import sys
 #import requests
 
-dev=serial.Serial(sys.argv[1],9600,timeout=1)
+dev=serial.Serial()
+dev.baudrate=9600
+dev.port=sys.argv[1]
+dev.timeout=1
+
+try:
+  dev.open()
+except:
+  print "-1"
+  sys.exit()
 
 if not dev.isOpen():
-  exit
+  print "-1"
+  sys.exit()
 
 dev.read(100)
 

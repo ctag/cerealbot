@@ -41,6 +41,8 @@ X-Axis: Previous Hours. Blue: Humidity (0-100%). Red: Temperature (0-100C).
       hours[_index] = temp_data.length - _index;
     }
 
+hours[hours.length-1] = "now";
+
     var data = {
       labels: hours,
       datasets: [{
@@ -65,15 +67,21 @@ X-Axis: Previous Hours. Blue: Humidity (0-100%). Red: Temperature (0-100C).
     };
 
     var options = {
-
+bezierCurve: false,
+pointDotRadius: 2,
+datasetFill: false,
+datasetStrokeWidth: 1,
+scaleGridLineColor: "rgba(150,150,150,0.2)"
     };
+
+Chart.defaults.global.tooltipCornerRadius=0;
 
     // Load latest dataset
     $('#latest').html("[" + time + "] \t [" + temp + " C] \t [" + hum + " %]");
 
     // Get the context of the canvas element we want to select
     var ctx = document.getElementById("envchart").getContext("2d");
-    var chart = new Chart(ctx).Line(data);
+    var chart = new Chart(ctx).Line(data, options);
 
 
 // Retrieves variables from URL
