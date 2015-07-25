@@ -36,12 +36,12 @@
       labels: hours,
       datasets: [{
         label: "Temperature",
-        fillColor: "rgba(220,220,220,0.2)",
-        strokeColor: "rgba(220,220,220,1)",
+        fillColor: "rgba(220,120,120,0.2)",
+        strokeColor: "rgba(220,120,120,1)",
         pointColor: "rgba(220,220,220,1)",
-        pointStrokeColor: "#fff",
-        pointHighlightFill: "#fff",
-        pointHighlightStroke: "rgba(220,220,220,1)",
+        pointStrokeColor: "#faa",
+        pointHighlightFill: "#faa",
+        pointHighlightStroke: "rgba(220,200,200,1)",
         data: temp_data
       }, {
         label: "Humidity",
@@ -53,6 +53,10 @@
         pointHighlightStroke: "rgba(151,187,205,1)",
         data: hum_data
       }]
+    };
+
+    var options = {
+
     };
 
     // Load latest dataset
