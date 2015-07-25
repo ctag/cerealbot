@@ -15,9 +15,19 @@ AVR_DEV=/dev/ttyAMA0
 TEMP=$(python $LOCAL_DIR/collect.py $AVR_DEV temp)
 HUM=$(python $LOCAL_DIR/collect.py $AVR_DEV hum)
 
-if [ $TEMP -lt 1 ] || [ $HUM -lt 1 ]; then
-	exit
-fi
+LOOP=0
+
+while [ $LOOP -lt 6 ] && ( [ $TEMP -lt 1 ] || [ $HUM -lt 1 ] )
+do
+	echo "Serial busy, waiting 5 minutes. $LOOP"
+	LOOP=$((LOOP+1))
+	sleep 2s
+	TEMP=$(python $LOCAL_DIR/collect.py $AVR_DEV temp)
+	HUM=$(python $LOCAL_DIR/collect.py $AVR_DEV hum)
+done
+
+TZ='America/Chicago'
+export TZ
 
 YEAR=`date +%Y`
 MONTH=`date +%m`
@@ -38,7 +48,21 @@ LR=$LOCAL_DIR/last_reading.js
 echo "time=\"${LONGTIME}\";" > $LR
 echo "temp=${TEMP};" >> $LR
 echo "hum=${HUM};" >> $LR
+
+$LOCAL_DIR/assemble.sh
+
 exit
+
+
+
+
+
+
+
+
+
+
+
 
 if [ $RET -eq 0 ] && [ $VAL -eq 0 ]; then
 	MSG="Sensors indicate the Fabrication Laboratory's condensed humidity reservior has reached maximum capacity."

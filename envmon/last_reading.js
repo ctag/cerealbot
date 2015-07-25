@@ -1,3 +1,3 @@
-time="Tue 16 Jun 2015 20:10:04 UTC";
-temp=30;
-hum=60;
+time="Thu 18 Jun 2015 01:20:10 CDT";
+temp=-1;
+hum=-1;

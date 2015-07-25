@@ -12,11 +12,20 @@
 
 <BODY style="width: 100%; height: 100%; background: #222;">
 
+<script>
+
+</script>
+
+
+
   <div style="width: 100%; height: 100%; color: #FF6666; align: center; text-align: center; padding-top: 50px;">
     FabLab Environment
     <br>
-    <canvas id="envchart" width="800" height="300" style="margin: 0 auto; display: inline;"></canvas>
-    <div id="latest" sylte="margin: auto;"></div>
+    <canvas id="envchart" width="700" height="300" style="margin: 0 auto; display: inline;"></canvas>
+    <br>
+X-Axis: Previous Hours. Blue: Humidity (0-100%). Red: Temperature (0-100C).
+<br>
+<div id="latest" sylte="margin: auto; margin-bottom: 0px;"></div>
   </div>
 
   <script>
@@ -32,6 +41,8 @@
       hours[_index] = temp_data.length - _index;
     }
 
+hours[hours.length-1] = "now";
+
     var data = {
       labels: hours,
       datasets: [{
@@ -45,26 +56,64 @@
         data: temp_data
       }, {
         label: "Humidity",
-        fillColor: "rgba(151,187,205,0.2)",
-        strokeColor: "rgba(151,187,205,1)",
-        pointColor: "rgba(151,187,205,1)",
-        pointStrokeColor: "#fff",
-        pointHighlightFill: "#fff",
-        pointHighlightStroke: "rgba(151,187,205,1)",
+        fillColor: "rgba(100,100,200,0.2)",
+        strokeColor: "rgba(100,100,200,1)",
+        pointColor: "rgba(100,100,200,1)",
+        pointStrokeColor: "#99f",
+        pointHighlightFill: "#99f",
+        pointHighlightStroke: "rgba(120,120,250,1)",
         data: hum_data
       }]
     };
 
     var options = {
-
+bezierCurve: false,
+pointDotRadius: 2,
+datasetFill: false,
+datasetStrokeWidth: 1,
+scaleGridLineColor: "rgba(150,150,150,0.2)"
     };
+
+Chart.defaults.global.tooltipCornerRadius=0;
 
     // Load latest dataset
     $('#latest').html("[" + time + "] \t [" + temp + " C] \t [" + hum + " %]");
 
     // Get the context of the canvas element we want to select
     var ctx = document.getElementById("envchart").getContext("2d");
-    var chart = new Chart(ctx).Line(data);
+    var chart = new Chart(ctx).Line(data, options);
+
+
+// Retrieves variables from URL
+// stores them in zui.get
+function fetchGET(_callback) {
+  var _get = new Object();
+  //http://stackoverflow.com/questions/8648892/convert-url-parameters-to-a-javascript-object
+  var search = window.location.search.substring(1);
+  search ? JSON.parse('{"' + search.replace(/&/g, '","').replace(/=/g, '":"').replace(/\//g, '') + '"}',
+    function(key, value) {
+      key === "" ? value : decodeURIComponent(value);
+      _get[key] = value;
+      // Execute callback
+      if (_callback && typeof(_callback) === 'function') {
+        _callback(_get);
+      }
+    }) : {}
+  return _get;
+}
+
+var getVars = fetchGET();
+
+console.log(getVars.width, getVars.height, typeof(getVars.width));
+
+if (typeof(getVars.width) !== 'undefined') {
+$("#envchart").width(getVars.width);
+}
+
+if (typeof(getVars.height) !== 'undefined') {
+$("#envchart").height(getVars.height);
+}
+
   </script>
 
 </BODY>
