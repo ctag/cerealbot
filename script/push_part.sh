@@ -225,6 +225,8 @@ Z_VAR=2
 FINAL_SCAN='false'
 }
 
+not_implemented
+
 write_msg "STD,LOG,RQ" "Should be done clearing print bed." "$LOG"
 
 

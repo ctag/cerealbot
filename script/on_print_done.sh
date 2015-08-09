@@ -56,6 +56,7 @@ fi
 if [ "$TIMEOUT_ENABLED" = "true" ]; then
 	write_msg "LOG" "Sleeping to let buildplate cool off." "$LOG"
 	sleep 20m
+	fanctl "off"
 fi
 
 #write_msg "LOG,STD" "Deleting $FILE from server queue." "$LOG"
@@ -80,5 +81,8 @@ if [ "$PUSH_ENABLED" = "true" ]; then
 else
 	write_msg "STD,LOG" "Not pushing parts, disabled in config." "$LOG"
 fi
+
+fanctl "off"
+printr_cmd "M106 S0"
 
 rm -f ${LOCKFILE}

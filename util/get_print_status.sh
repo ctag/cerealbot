@@ -5,7 +5,7 @@
 
 APIKEY=$1
 
-RESPONSE=`curl -i -H "Accept: application/json" -H "X-Api-Key: ${APIKEY}" "bns-daedalus.256.makerslocal.org/api/job"`
+RESPONSE=`curl -i -H "Accept: application/json" -H "X-Api-Key: ${APIKEY}" "bns-daedalus.berocs.com/api/job"`
 
 echo ${RESPONSE}
 

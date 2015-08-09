@@ -61,10 +61,12 @@ function cycle_hotbed {
     write_msg "STD,LOG" "Done with cycle." "$LOG"
 }
 
-write_msg "RQ,STD,LOG" "Activating automatic part adherence mitigation. Please stand clear." "$LOG"
-for cycle in {1..${POP_CYCLES}}
+write_msg "RQ,STD,LOG" "Activating automatic part adherence mitigation [$POP_CYCLES]. Please stand clear." "$LOG"
+index=1
+while [ "$index" -le "$POP_CYCLES" ];
 do
 	cycle_hotbed
+	index=$(($index+1))
 done
 write_msg "STD,RQ,LOG" "Finished automatic buildplate cycling." "$LOG"
 

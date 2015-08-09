@@ -2,7 +2,7 @@
 
 # This script will report the location of the printer's hotend
 
-RESPONSE=`curl -H "X-Api-Key: $OCTO_API_KEY" -F command=M114 "bns-daedalus.256.makerslocal.org/api/printer/command"`
+RESPONSE=`curl -H "X-Api-Key: $OCTO_API_KEY" -F command=M114 "bns-daedalus.berocs.com/api/printer/command"`
 
 echo ${RESPONSE}
 

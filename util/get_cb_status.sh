@@ -19,7 +19,7 @@ fi
 . $LOCAL_DIR/config
 
 # Fetch Printer Status
-PRINTR_STATUS=`curl -H "X-Api-Key:$OCTO_API_KEY" http://bns-daedalus.256.makerslocal.org/api/printer -o /tmp/printr_status.json`
+PRINTR_STATUS=`curl -H "X-Api-Key:$OCTO_API_KEY" http://bns-daedalus.berocs.com/api/printer -o /tmp/printr_status.json`
 if [ $? -ne 0 ]; then
     echo "Status failed, exiting."
     exit "$RETFAIL"

@@ -9,6 +9,9 @@ t_data="temp_data=["
 h_data="hum_data=["
 
 function load_data {
+if [ $# -ne 2 ]; then
+return
+fi
 echo "All: $@"
 temp=$1
 hum=$2
@@ -17,8 +20,8 @@ if [ $t_data == "temp_data=[" ]; then
 t_data+="$temp"
 h_data+="$hum"
 else
-t_data+=",$temp"
-h_data+=",$hum"
+t_data+=",\"$temp\""
+h_data+=",\"$hum\""
 fi
 }
 

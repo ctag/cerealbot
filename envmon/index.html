@@ -29,6 +29,35 @@ X-Axis: Previous Hours. Blue: Humidity (0-100%). Red: Temperature (0-100C).
   </div>
 
   <script>
+// Retrieves variables from URL
+// stores them in zui.get
+function fetchGET(_callback) {
+  var _get = new Object();
+  //http://stackoverflow.com/questions/8648892/convert-url-parameters-to-a-javascript-object
+  var search = window.location.search.substring(1);
+  search ? JSON.parse('{"' + search.replace(/&/g, '","').replace(/=/g, '":"').replace(/\//g, '') + '"}',
+    function(key, value) {
+      key === "" ? value : decodeURIComponent(value);
+      _get[key] = value;
+      // Execute callback
+      if (_callback && typeof(_callback) === 'function') {
+        _callback(_get);
+      }
+    }) : {}
+  return _get;
+}
+
+var getVars = fetchGET();
+
+console.log(getVars.width, getVars.height, typeof(getVars.width));
+
+if (typeof(getVars.width) !== 'undefined') {
+$("#envchart").width(getVars.width);
+}
+
+if (typeof(getVars.height) !== 'undefined') {
+$("#envchart").height(getVars.height);
+}
   //console.log(typeof(temp_data));
     if (typeof(temp_data) !== 'object') {
       temp_data = [0,0];
@@ -36,6 +65,20 @@ X-Axis: Previous Hours. Blue: Humidity (0-100%). Red: Temperature (0-100C).
     if (typeof(hum_data) !== 'object') {
       hum_data = [0,0];
     }
+
+for (var _index in temp_data) {
+if (typeof(temp_data[_index]) !== 'number') {
+temp_data[_index] = Number(temp_data[_index]);
+}
+}
+
+for (var _index in hum_data) {
+if (typeof(hum_data[_index]) !== 'number') {
+hum_data[_index] = Number(hum_data[_index]);
+}
+}
+
+
     hours = [];
     for (var _index = 0; _index < temp_data.length; _index++) {
       hours[_index] = temp_data.length - _index;
@@ -84,35 +127,6 @@ Chart.defaults.global.tooltipCornerRadius=0;
     var chart = new Chart(ctx).Line(data, options);
 
 
-// Retrieves variables from URL
-// stores them in zui.get
-function fetchGET(_callback) {
-  var _get = new Object();
-  //http://stackoverflow.com/questions/8648892/convert-url-parameters-to-a-javascript-object
-  var search = window.location.search.substring(1);
-  search ? JSON.parse('{"' + search.replace(/&/g, '","').replace(/=/g, '":"').replace(/\//g, '') + '"}',
-    function(key, value) {
-      key === "" ? value : decodeURIComponent(value);
-      _get[key] = value;
-      // Execute callback
-      if (_callback && typeof(_callback) === 'function') {
-        _callback(_get);
-      }
-    }) : {}
-  return _get;
-}
-
-var getVars = fetchGET();
-
-console.log(getVars.width, getVars.height, typeof(getVars.width));
-
-if (typeof(getVars.width) !== 'undefined') {
-$("#envchart").width(getVars.width);
-}
-
-if (typeof(getVars.height) !== 'undefined') {
-$("#envchart").height(getVars.height);
-}
 
   </script>
 

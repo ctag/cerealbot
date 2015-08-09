@@ -15,10 +15,10 @@ fi
 AVR_DEV=/dev/ttyAMA0
 
 # Variables for printrbot scripts
-BAR_STORED=170
+BAR_STORED=172
 BAR_DEPLOYED=120
 BAR_FORWARD=035
-BAR_PUSH=075
+BAR_PUSH=080
 
 # Declare that the dotdir is just in the same parent directory
 CB_DOTDIR=$CB_DIR/../.cerealbox
@@ -41,8 +41,8 @@ Z_STEP=4
 # Toggles
 SERIAL_ENABLED=true
 RQ_ENABLED=true
-POP_ENABLED=true
-PUSH_ENABLED=true
+POP_ENABLED=false
+PUSH_ENABLED=false
 TIMEOUT_ENABLED=true
 
 # Time for build plate to cool

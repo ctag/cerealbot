@@ -18,14 +18,14 @@ fi
 if [ $1 == on ]
 then
 echo Turning on the fan.
-echo -n ..:fi >> "$AVR_DEV"
+echo ..:fi >> "$AVR_DEV"
 exit
 fi
 
 if [ $1 == off ]
 then
 echo Turning off the fan.
-echo -n ..:fo >> "$AVR_DEV"
+echo ..:fo >> "$AVR_DEV"
 exit
 fi
 
