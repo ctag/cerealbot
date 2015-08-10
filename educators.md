@@ -2,11 +2,11 @@
 
 Dear Educators of Madison City Schools,
 
-Hi, I'm Christopher Bero, a recent graduate from MCS. 
+Hi, I'm Christopher Bero, a former student of MCS's Horizon, Discovery, and BobJones.
 
 ### Cereally 3D
 
-I am pleased to present my ongoing project: Cereally 3D. For the past several weeks I have designed and begun construction on an adaptation to the popular consumer-grade Printrbot Simple Metal. 
+I am pleased to present my ongoing project: Cerealbot. For the past several weeks I have designed and begun construction on an adaptation to the popular consumer-grade Printrbot Simple Metal. 
 
 3D Plastics Printers are fun and all, but they still lack serious technological advancements that are necessary for them to be ultimately useful in home and consumer applications. Namely, printing currently requires a person present to chip a part off of the hotbed after printing. This means that printers are limited to printing only as long as a person is around to set up for the next item to be printed.
 
