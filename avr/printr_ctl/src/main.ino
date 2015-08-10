@@ -1,7 +1,9 @@
 #include <Arduino.h>
 #include <Servo.h>
+#include <Wire.h>
 // http://davidegironi.blogspot.com/2013/07/amt1001-humidity-and-temperature-sensor.html
 #include "amt1001_ino.h"
+#include "Adafruit_PWMServoDriver.h"
 
 /**
  * Cereally 3D Arduino
@@ -25,6 +27,23 @@
  */
 const unsigned short int BUF_LEN = 32;
 
+const unsigned short int BASE_MIN = 100; // pulse
+const unsigned short int BASE_MAX = 620; // pulse
+const unsigned short int BASE_RANGE = 200; // degrees
+const unsigned short int BASE_DEFAULT = 190; // degrees
+
+
+const unsigned short int SHDR_MIN = 250; // pulse
+const unsigned short int SHDR_MAX = 600; // pulse
+const unsigned short int SHDR_RANGE = 140; // degrees
+const unsigned short int SHDR_DEFAULT = 120; // degrees
+
+const unsigned short int ELBO_MIN = 260; // pulse
+const unsigned short int ELBO_MAX = 620; // pulse
+const unsigned short int ELBO_RANGE = 145; // degrees
+const unsigned short int ELBO_DEFAULT = 20; // degrees
+
+
 /**
  * Global Variables
  */
@@ -47,6 +66,7 @@ short fanPin = 3; // Relay trigger for hotbed fans
 short popbarPin = 9; // PWM pin for servo mounted to printer extruder
 short humPin = A0; // Humidity sensor
 short tempPin = A1; // Temperature sensor
+Adafruit_PWMServoDriver armPWM = Adafruit_PWMServoDriver(0x40);
 
 /**
  * Function prototypes
@@ -60,6 +80,11 @@ void setup()
 	
 	pinMode(humPin, INPUT);
 	pinMode(tempPin, INPUT);
+	
+	armPWM.begin();
+	armPWM.setPWMFreq(60);
+	uint8_t twbrbackup = TWBR;
+	TWBR=12;
 	
 	Serial.begin(9600);
 	
@@ -114,14 +139,14 @@ void process_buffer(bool loud = false)
 		uint16_t humidity = amt1001_gethumidity(volt);
 		Serial.println(humidity);
 	}
-	else if (strstr(in_buffer, "servo ") != NULL || in_buffer[0] == 's')
+	else if (strstr(in_buffer, "base ") != NULL || in_buffer[0] == 'b')
 	{
 		if (loud) Serial.println("Checking for servo command.");
 		char tmp_val[3];
 		if (strlen(in_buffer) > 4) {
-			tmp_val[0] = in_buffer[6];
-			tmp_val[1] = in_buffer[7];
-			tmp_val[2] = in_buffer[8];
+			tmp_val[0] = in_buffer[5];
+			tmp_val[1] = in_buffer[6];
+			tmp_val[2] = in_buffer[7];
 		} else {
 			tmp_val[0] = in_buffer[1];
 			tmp_val[1] = in_buffer[2];
@@ -132,10 +157,64 @@ void process_buffer(bool loud = false)
 			Serial.print("\n\rServo val: ");
 			Serial.println(servo_val);
 		}
-		if (servo_val >= 0 && servo_val <= 180)
+		if (servo_val >= 0 && servo_val <= BASE_RANGE)
 		{
 			if (loud) Serial.println("Sending to servo.");
-			servoPopbar.write(servo_val);
+			//servoPopbar.write(servo_val);
+			short unsigned int pulselen = map(servo_val, 0, BASE_RANGE, BASE_MIN, BASE_MAX);
+			armPWM.setPWM(0, 0, pulselen);
+		}
+	}
+	else if (strstr(in_buffer, "shdr ") != NULL || in_buffer[0] == 'u')
+	{
+		if (loud) Serial.println("Checking for servo command.");
+		char tmp_val[3];
+		if (strlen(in_buffer) > 4) {
+			tmp_val[0] = in_buffer[5];
+			tmp_val[1] = in_buffer[6];
+			tmp_val[2] = in_buffer[7];
+		} else {
+			tmp_val[0] = in_buffer[1];
+			tmp_val[1] = in_buffer[2];
+			tmp_val[2] = in_buffer[3];
+		}
+		int servo_val = atoi(tmp_val);
+		if (loud) {
+			Serial.print("\n\rServo val: ");
+			Serial.println(servo_val);
+		}
+		if (servo_val >= 0 && servo_val <= SHDR_RANGE)
+		{
+			if (loud) Serial.println("Sending to servo.");
+			//servoPopbar.write(servo_val);
+			short unsigned int pulselen = map(servo_val, 0, SHDR_RANGE, SHDR_MIN, SHDR_MAX);
+			armPWM.setPWM(2, 0, pulselen);
+		}
+	}
+	else if (strstr(in_buffer, "elbo ") != NULL || in_buffer[0] == 'e')
+	{
+		if (loud) Serial.println("Checking for servo command.");
+		char tmp_val[3];
+		if (strlen(in_buffer) > 4) {
+			tmp_val[0] = in_buffer[5];
+			tmp_val[1] = in_buffer[6];
+			tmp_val[2] = in_buffer[7];
+		} else {
+			tmp_val[0] = in_buffer[1];
+			tmp_val[1] = in_buffer[2];
+			tmp_val[2] = in_buffer[3];
+		}
+		int servo_val = atoi(tmp_val);
+		if (loud) {
+			Serial.print("\n\rServo val: ");
+			Serial.println(servo_val);
+		}
+		if (servo_val >= 0 && servo_val <= ELBO_RANGE)
+		{
+			if (loud) Serial.println("Sending to servo.");
+			//servoPopbar.write(servo_val);
+			short unsigned int pulselen = map(servo_val, 0, ELBO_RANGE, ELBO_MIN, ELBO_MAX);
+			armPWM.setPWM(1, 0, pulselen);
 		}
 	}
 	reset_buffer();
