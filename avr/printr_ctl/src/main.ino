@@ -37,19 +37,6 @@
 const unsigned short int BUF_LEN = 32;
 const unsigned int SETTINGS_ADDR = 0;
 
-/*	unsigned short int BASE_MIN = 100; // pulse
-	unsigned short int BASE_MAX = 620; // pulse
-	unsigned short int BASE_RANGE = 200; // degrees
-	
-	unsigned short int SHDR_MIN = 250; // pulse
-	unsigned short int SHDR_MAX = 600; // pulse
-	unsigned short int SHDR_RANGE = 140; // degrees
-	
-	unsigned short int ELBO_MIN = 260; // pulse
-	unsigned short int ELBO_MAX = 620; // pulse
-	unsigned short int ELBO_RANGE = 145; // degrees
-*/
-
 typedef struct {
 	unsigned short int BASE_MIN; // pulse
 	unsigned short int BASE_MAX; // pulse
@@ -182,6 +169,26 @@ void load_states ()
 	EEPROM.get(STATES_ADDR, system_states);
 }
 
+void slow_pwm (short unsigned int pin, short unsigned from_pulse, short unsigned int to_pulse)
+{
+	short unsigned int delTime = 20;
+	if (from_pulse < to_pulse)
+	{
+		for (; from_pulse <= to_pulse; from_pulse++)
+		{
+			armPWM.setPWM(pin, 0, from_pulse);
+			delay(delTime);
+		}
+	} else {
+		for (; from_pulse >= to_pulse; from_pulse--)
+		{
+			armPWM.setPWM(pin, 0, from_pulse);
+			delay(delTime);
+		}
+	}
+	
+}
+
 void process_buffer(bool loud = false)
 {
 	if (loud) {
@@ -241,7 +248,8 @@ void process_buffer(bool loud = false)
 			{
 				if (loud) Serial.println("Sending to servo.");
 				short unsigned int pulselen = map(servo_deg, 0, system_settings.BASE_RANGE, system_settings.BASE_MIN, system_settings.BASE_MAX);
-				armPWM.setPWM(0, 0, pulselen);
+				short unsigned int from_pulse = map(system_states.BASE_POS, 0, system_settings.BASE_RANGE, system_settings.BASE_MIN, system_settings.BASE_MAX);
+				slow_pwm(0, from_pulse, pulselen);
 				system_states.BASE_POS = servo_deg;
 				save_states();
 			} else {
@@ -263,7 +271,8 @@ void process_buffer(bool loud = false)
 			{
 				if (loud) Serial.println("Sending to servo.");
 				short unsigned int pulselen = map(servo_deg, 0, system_settings.SHDR_RANGE, system_settings.SHDR_MIN, system_settings.SHDR_MAX);
-				armPWM.setPWM(1, 0, pulselen);
+				short unsigned int from_pulse = map(system_states.SHDR_POS, 0, system_settings.SHDR_RANGE, system_settings.SHDR_MIN, system_settings.SHDR_MAX);
+				slow_pwm(1, from_pulse, pulselen);
 				system_states.SHDR_POS = servo_deg;
 				save_states();
 			} else {
@@ -285,7 +294,8 @@ void process_buffer(bool loud = false)
 			{
 				if (loud) Serial.println("Sending to servo.");
 				short unsigned int pulselen = map(servo_deg, 0, system_settings.ELBO_RANGE, system_settings.ELBO_MIN, system_settings.ELBO_MAX);
-				armPWM.setPWM(2, 0, pulselen);
+				short unsigned int from_pulse = map(system_states.ELBOW_POS, 0, system_settings.ELBO_RANGE, system_settings.ELBO_MIN, system_settings.ELBO_MAX);
+				slow_pwm(2, from_pulse, pulselen);
 				system_states.ELBOW_POS = servo_deg;
 				save_states();
 			} else {
