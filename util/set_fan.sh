@@ -19,7 +19,7 @@ if [ $1 == on ]
 then
 echo Turning on the fan.
 echo ..:fi >> "$AVR_DEV"
-node /home/pi/nodetest/fan_on.js
+node /home/berocs/nodetest/fan_on.js
 exit
 fi
 
@@ -27,7 +27,7 @@ if [ $1 == off ]
 then
 echo Turning off the fan.
 echo ..:fo >> "$AVR_DEV"
-node /home/pi/nodetest/fan_off.js
+node /home/berocs/nodetest/fan_off.js
 exit
 fi
 
