@@ -1,17 +1,16 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include <EEPROM.h>
+
 // http://davidegironi.blogspot.com/2013/07/amt1001-humidity-and-temperature-sensor.html
 #include "amt1001_ino.h"
 #include "Adafruit_PWMServoDriver.h"
 
 /**
- * Cereally 3D Arduino
+ * Cerealbot Arduino
  * Christopher [ctag] Bero - bigbero@gmail.com
- */
-
-/**
- * Working Commands
+ *
+ * Commands
  * [sf1] 	Set fan on
  * [sf0] 	Set fan off
  * [sft] 	Set fan toggle
@@ -20,6 +19,11 @@
  * [slt] 	Set light toggle
  * [gf] 	Get fan state
  * [gl] 	Get light state
+ * [sl1]	Set light on
+ * [sl0]	Set light off
+ * [slt]	Set light toggle
+ * [gl]		Get light state
+ * [gp]		Get plastic (filament) state
  * [gt] 	Get temperature
  * [gtv] 	Get temperature raw value
  * [gh] 	Get humidity
@@ -30,8 +34,13 @@
  * [gu] 	Get shdr servo degrees
  * [se100] 	Set elbo servo degrees
  * [ge] 	Get elbo servo degrees
+ * [gd]		Get pwm delay (msec)
+ * [sd100]	Set pwm delay (msec)
  * [le]		Load default settings
  * [la] 	Load default states
+ * 
+ * Events
+ * !p0!		The filament has run out!
  * 
  */
 
@@ -53,6 +62,8 @@ typedef struct {
 	unsigned short int ELBO_MIN; // pulse
 	unsigned short int ELBO_MAX; // pulse
 	unsigned short int ELBO_RANGE; // degrees
+	
+	unsigned int PWM_DELAY; // Millisec
 } settings;
 
 // Default settings
@@ -67,7 +78,8 @@ settings default_settings = {
 	140, // SHDR_RANGE
 	260, // ELBO_MIN
 	620, // ELBO_MAX
-	145 // ELBO_RANGE
+	145, // ELBO_RANGE
+	20 // PWM_DELAY
 };
 
 const unsigned int STATES_ADDR = sizeof(system_settings)+10;
@@ -88,7 +100,7 @@ states default_states = {
 	10,
 	10,
 	0,
-	0
+	1
 };
 
 /**
@@ -108,10 +120,11 @@ short int input_state = 0; // Current state for reading serial input.
 /**
  * Pin Mappings
  */
-short fanPin = 3; // Relay trigger for hotbed fans
-short lightPin = 4; // Relay trigger for hotbed fans
-short humPin = A0; // Humidity sensor
-short tempPin = A1; // Temperature sensor
+unsigned short int fanPin = 3; // Relay trigger for hotbed fans
+unsigned short int lightPin = 4; // Relay trigger for lights
+unsigned short int plasticPin = A2; // Filament detector
+unsigned short int humPin = A0; // Humidity sensor
+unsigned short int tempPin = A1; // Temperature sensor
 Adafruit_PWMServoDriver armPWM = Adafruit_PWMServoDriver(0x40);
 
 /**
@@ -149,6 +162,7 @@ void setup()
 	delay(50);
 	
 	reset_buffer();
+	//Serial.println("ATmega reset");
 	
 	delay(50);
 }
@@ -184,19 +198,18 @@ void load_states ()
 
 void slow_pwm (short unsigned int pin, short unsigned from_pulse, short unsigned int to_pulse)
 {
-	short unsigned int delTime = 20;
 	if (from_pulse < to_pulse)
 	{
 		for (; from_pulse <= to_pulse; from_pulse++)
 		{
 			armPWM.setPWM(pin, 0, from_pulse);
-			delay(delTime);
+			delay(system_settings.PWM_DELAY);
 		}
 	} else {
 		for (; from_pulse >= to_pulse; from_pulse--)
 		{
 			armPWM.setPWM(pin, 0, from_pulse);
-			delay(delTime);
+			delay(system_settings.PWM_DELAY);
 		}
 	}
 	
@@ -255,7 +268,7 @@ void process_buffer(bool loud = false)
 				digitalWrite(lightPin, LOW);
 				system_states.LIGHT = 1;
 				save_states();
-			} 
+			}
 			else if (in_buffer[2] == '0') // Set Light Off
 			{
 				if (loud) Serial.println("OFF.");
@@ -279,7 +292,7 @@ void process_buffer(bool loud = false)
 			}
 			else // Set Light Undefined
 			{
-				Serial.println("\n\r\n\r>>> Error in process_buffer. sf.");
+				Serial.println("\n\r\n\r>>> Error in process_buffer. sl.");
 			}
 		} // end Set Light
 		else if (in_buffer[1] == 'b') // Set Base servo
@@ -348,9 +361,21 @@ void process_buffer(bool loud = false)
 				system_states.ELBOW_POS = servo_deg;
 				save_states();
 			} else {
-				Serial.println("\n\r\n\r>>> Error in process_buffer. sb.");
+				Serial.println("\n\r\n\r>>> Error in process_buffer. se.");
 			}
 		} // end Set ELBO
+		else if (in_buffer[1] == 'd') // Set pwm delay
+		{
+			if (loud) Serial.println("PWM Delay: ");
+			char tmp_val[3];
+			tmp_val[0] = in_buffer[2];
+			tmp_val[1] = in_buffer[3];
+			tmp_val[2] = in_buffer[4];
+			short unsigned int newDelay = atoi(tmp_val);
+			if (loud) Serial.println(newDelay);
+			system_settings.PWM_DELAY = newDelay;
+			save_states();
+		} // end Set pwm delay
 		else // Set undefined
 		{
 			Serial.println("\n\r\n\r>>> Error in process_buffer. s.");
@@ -376,7 +401,7 @@ void process_buffer(bool loud = false)
 			} else {
 				Serial.println('1');
 			}
-		} // end get fan
+		} // end get light
 		else if (in_buffer[1] == 't') // Get Temperature
 		{
 			if (in_buffer[2] == 'v') // Get Temperature Value
@@ -415,6 +440,10 @@ void process_buffer(bool loud = false)
 		else if (in_buffer[1] == 'e') // Get ELBO
 		{
 			Serial.println(system_states.ELBOW_POS);
+		}
+		else if (in_buffer[1] == 'd') // Get pwm delay
+		{
+			Serial.println(system_settings.PWM_DELAY);
 		}
 		else // Get Undefined
 		{
