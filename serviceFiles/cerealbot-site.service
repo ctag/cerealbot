@@ -1,0 +1,16 @@
+[Unit]
+Description=CerealBot Website Daemon
+
+[Service]
+WorkingDirectory=/home/berocs/cerealbot-site
+ExecStart=/usr/bin/node /home/berocs/cerealbot-site/bin/www
+Restart=always
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=cerealbot-site
+User=berocs
+Group=berocs
+Environment=NODE_ENV=production
+
+[Install]
+WantedBy=multi-user.target

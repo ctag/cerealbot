@@ -1,0 +1,16 @@
+[Unit]
+Description=CerealBot AVR Serial Daemon
+
+[Service]
+WorkingDirectory=/home/berocs/cerealbot-serial
+ExecStart=/usr/bin/node /home/berocs/cerealbot-serial/bin/www
+Restart=always
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=cerealbot-serial
+User=berocs
+Group=berocs
+Environment=NODE_ENV=production
+
+[Install]
+WantedBy=multi-user.target

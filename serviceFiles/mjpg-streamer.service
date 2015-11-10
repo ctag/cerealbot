@@ -1,0 +1,9 @@
+[Unit]
+Description=mjpg-streamer daemon
+
+[Service]
+Type=simple
+ExecStart=/home/berocs/mjpg-streamer/mjpg-streamer-experimental/start.sh
+
+[Install]
+WantedBy=multi-user.target
