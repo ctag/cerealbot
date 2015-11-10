@@ -15,7 +15,11 @@
  * [sf1] 	Set fan on
  * [sf0] 	Set fan off
  * [sft] 	Set fan toggle
+ * [sl1] 	Set light on
+ * [sl0] 	Set light off
+ * [slt] 	Set light toggle
  * [gf] 	Get fan state
+ * [gl] 	Get light state
  * [gt] 	Get temperature
  * [gtv] 	Get temperature raw value
  * [gh] 	Get humidity
@@ -73,6 +77,7 @@ typedef struct {
 	unsigned short int SHDR_POS;
 	unsigned short int ELBOW_POS;
 	boolean FAN;
+	boolean LIGHT;
 } states;
 
 // Default system state
@@ -82,6 +87,7 @@ states default_states = {
 	10,
 	10,
 	10,
+	0,
 	0
 };
 
@@ -103,6 +109,7 @@ short int input_state = 0; // Current state for reading serial input.
  * Pin Mappings
  */
 short fanPin = 3; // Relay trigger for hotbed fans
+short lightPin = 4; // Relay trigger for hotbed fans
 short humPin = A0; // Humidity sensor
 short tempPin = A1; // Temperature sensor
 Adafruit_PWMServoDriver armPWM = Adafruit_PWMServoDriver(0x40);
@@ -117,10 +124,16 @@ void setup()
 	load_settings();
 	load_states();
 	pinMode(fanPin, OUTPUT);
+	pinMode(lightPin, OUTPUT);
 	if (system_states.FAN == 1) {
 		digitalWrite(fanPin, LOW);
 	} else {
 		digitalWrite(fanPin, HIGH);
+	}
+	if (system_states.LIGHT == 1) {
+		digitalWrite(lightPin, LOW);
+	} else {
+		digitalWrite(lightPin, HIGH);
 	}
 	
 	pinMode(humPin, INPUT);
@@ -233,6 +246,42 @@ void process_buffer(bool loud = false)
 				Serial.println("\n\r\n\r>>> Error in process_buffer. sf.");
 			}
 		} // end Set Fan
+		else if (in_buffer[1] == 'l') // Set Light
+		{
+			if (loud) Serial.print("Turning light: ");
+			if (in_buffer[2] == '1') // Set Light On
+			{
+				if (loud) Serial.println("ON.");
+				digitalWrite(lightPin, LOW);
+				system_states.LIGHT = 1;
+				save_states();
+			} 
+			else if (in_buffer[2] == '0') // Set Light Off
+			{
+				if (loud) Serial.println("OFF.");
+				digitalWrite(lightPin, HIGH);
+				system_states.LIGHT = 0;
+				save_states();
+			}
+			else if (in_buffer[2] == 't') // Set Light Toggle
+			{
+				if (system_states.LIGHT == 0) {
+					if (loud) Serial.println("ON.");
+					digitalWrite(lightPin, LOW);
+					system_states.LIGHT = 1;
+					save_states();
+				} else {
+					if (loud) Serial.println("OFF.");
+					digitalWrite(lightPin, HIGH);
+					system_states.LIGHT = 0;
+					save_states();
+				}
+			}
+			else // Set Light Undefined
+			{
+				Serial.println("\n\r\n\r>>> Error in process_buffer. sf.");
+			}
+		} // end Set Light
 		else if (in_buffer[1] == 'b') // Set Base servo
 		{
 			if (loud) Serial.println("BASE Servo: ");
@@ -314,6 +363,15 @@ void process_buffer(bool loud = false)
 		{
 			short unsigned int fanState = digitalRead(fanPin);
 			if (fanState == 1) {
+				Serial.println('0');
+			} else {
+				Serial.println('1');
+			}
+		} // end get fan
+		else if (in_buffer[1] == 'l') // Get Light
+		{
+			short unsigned int lightState = digitalRead(lightPin);
+			if (lightState == 1) {
 				Serial.println('0');
 			} else {
 				Serial.println('1');
