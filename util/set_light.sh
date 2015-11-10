@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Fan Control
+# LED Light Control
 
 # Set local directory
 LOCAL_DIR=`dirname $0`
@@ -11,23 +11,23 @@ LOCAL_DIR=`dirname $0`
 
 if [ -z $1 ]
 then
-echo "Usage: ./set_fan.sh on|off"
+echo "Usage: ./set_light.sh on|off"
 exit
 fi
 
 if [ $1 == on ]
 then
 echo Turning on the fan.
-echo ..:sf1 >> "$AVR_DEV"
-node /home/berocs/cerealbot-serial/request/fanOn.js
+echo ..:sl1 >> "$AVR_DEV"
+node /home/berocs/cerealbot-serial/request/lightOn.js
 exit
 fi
 
 if [ $1 == off ]
 then
 echo Turning off the fan.
-echo ..:sf0 >> "$AVR_DEV"
-node /home/berocs/cerealbot-serial/request/fanOff.js
+echo ..:sl0 >> "$AVR_DEV"
+node /home/berocs/cerealbot-serial/request/lightOff.js
 exit
 fi
 
