@@ -16,7 +16,8 @@ fi
 . $UTIL_DIR/config
 
 # Set resty url
-api_url='https://crump.space/rq'
+#api_url='https://crump.space/rq'
+api_url='https://crump.space/rq/api/v1.0'
 # resty output like: http://localhost/api* ''
 # We want everything before the '*'
 resty_url=`resty -v | awk -F '*' '{ print $1 }'`
@@ -32,8 +33,9 @@ if [ "$RQ_ENABLED" = "true" ]; then
 	# Write to logfile
 	$UTIL_DIR/write_msg.sh "LOG" "Writing message [$MSG] to RedQueen." "$LOG"
 	# Make API call
-	POST /relay "{\"message\":\"${MSG}\", \"channel\":\"##rqtest\", \
-\"isaction\":false, \"key\":\"$RQ_API_KEY\"}" >> $LOG
+	POST /messages -H "Content-Type: application/json" -d "{\"type\":\"command\",\"key\":\"$RQ_API_KEY\",\"destination\":\"rqirc\",\"data\":{\
+\"message\":\"${MSG}\", \"channel\":\"##rqtest\",\
+\"isaction\":false}}" >> $LOG
 else
 	$UTIL_DIR/write_msg.sh "LOG" "NOT writing message [$MSG] to RedQueen. Disabled in config." "$LOG"
 fi
