@@ -4,7 +4,7 @@
 
 // http://davidegironi.blogspot.com/2013/07/amt1001-humidity-and-temperature-sensor.html
 #include "amt1001_ino.h"
-#include "Adafruit_PWMServoDriver.h"
+#include "LedSensor.h"
 
 /**
  * Cerealbot Arduino
@@ -28,66 +28,22 @@
  * [gtv] 	Get temperature raw value
  * [gh] 	Get humidity
  * [ghv] 	Get humidity raw value
- * [sb100] 	Set base servo degrees
- * [gb] 	Get base servo degrees
- * [su100] 	Set shdr servo degrees
- * [gu] 	Get shdr servo degrees
- * [se100] 	Set elbo servo degrees
- * [ge] 	Get elbo servo degrees
- * [gd]		Get pwm delay (msec)
- * [sd100]	Set pwm delay (msec)
- * [le]		Load default settings
  * [la] 	Load default states
- * 
+ *
  * Events
  * !p0!		The filament has run out!
- * 
+ *
  */
 
 /**
  * Definitions
  */
 const unsigned short int BUF_LEN = 32;
-const unsigned int SETTINGS_ADDR = 0;
+const unsigned int STATES_ADDR = 0;
 
 typedef struct {
-	unsigned short int BASE_MIN; // pulse
-	unsigned short int BASE_MAX; // pulse
-	unsigned short int BASE_RANGE; // degrees
-	
-	unsigned short int SHDR_MIN; // pulse
-	unsigned short int SHDR_MAX; // pulse
-	unsigned short int SHDR_RANGE; // degrees
-	
-	unsigned short int ELBO_MIN; // pulse
-	unsigned short int ELBO_MAX; // pulse
-	unsigned short int ELBO_RANGE; // degrees
-	
-	unsigned int PWM_DELAY; // Millisec
-} settings;
-
-// Default settings
-settings system_settings;
-
-settings default_settings = {
-	100, // BASE_MIN
-	620, // BASE_MAX
-	200, // BASE_RANGE
-	250, // SHDR_MIN
-	600, // SHDR_MAX
-	140, // SHDR_RANGE
-	260, // ELBO_MIN
-	620, // ELBO_MAX
-	145, // ELBO_RANGE
-	20 // PWM_DELAY
-};
-
-const unsigned int STATES_ADDR = sizeof(system_settings)+10;
-
-typedef struct {
-	unsigned short int BASE_POS;
-	unsigned short int SHDR_POS;
-	unsigned short int ELBOW_POS;
+	unsigned int LEDMIN;
+	unsigned int LEDMAX;
 	boolean FAN;
 	boolean LIGHT;
 } states;
@@ -96,9 +52,8 @@ typedef struct {
 states system_states;
 
 states default_states = {
-	10,
-	10,
-	10,
+	2556,
+	0,
 	0,
 	1
 };
@@ -125,7 +80,6 @@ unsigned short int lightPin = 4; // Relay trigger for lights
 unsigned short int plasticPin = A2; // Filament detector
 unsigned short int humPin = A0; // Humidity sensor
 unsigned short int tempPin = A1; // Temperature sensor
-Adafruit_PWMServoDriver armPWM = Adafruit_PWMServoDriver(0x40);
 
 /**
  * Function prototypes
@@ -134,7 +88,6 @@ void reset_buffer ();
 
 void setup()
 {
-	load_settings();
 	load_states();
 	pinMode(fanPin, OUTPUT);
 	pinMode(lightPin, OUTPUT);
@@ -148,22 +101,17 @@ void setup()
 	} else {
 		digitalWrite(lightPin, HIGH);
 	}
-	
+
 	pinMode(humPin, INPUT);
 	pinMode(tempPin, INPUT);
-	
-	armPWM.begin();
-	armPWM.setPWMFreq(60);
-	uint8_t twbrbackup = TWBR;
-	TWBR=12;
-	
+
 	Serial.begin(9600);
-	
+
 	delay(50);
-	
+
 	reset_buffer();
 	//Serial.println("ATmega reset");
-	
+
 	delay(50);
 }
 
@@ -176,16 +124,6 @@ void reset_buffer ()
 	buffer_index = 0;
 }
 
-void save_settings ()
-{
-	EEPROM.put(SETTINGS_ADDR, system_settings);
-}
-
-void load_settings ()
-{
-	EEPROM.get(SETTINGS_ADDR, system_settings);
-}
-
 void save_states ()
 {
 	EEPROM.put(STATES_ADDR, system_states);
@@ -194,25 +132,6 @@ void save_states ()
 void load_states ()
 {
 	EEPROM.get(STATES_ADDR, system_states);
-}
-
-void slow_pwm (short unsigned int pin, short unsigned from_pulse, short unsigned int to_pulse)
-{
-	if (from_pulse < to_pulse)
-	{
-		for (; from_pulse <= to_pulse; from_pulse++)
-		{
-			armPWM.setPWM(pin, 0, from_pulse);
-			delay(system_settings.PWM_DELAY);
-		}
-	} else {
-		for (; from_pulse >= to_pulse; from_pulse--)
-		{
-			armPWM.setPWM(pin, 0, from_pulse);
-			delay(system_settings.PWM_DELAY);
-		}
-	}
-	
 }
 
 void process_buffer(bool loud = false)
@@ -232,7 +151,7 @@ void process_buffer(bool loud = false)
 				digitalWrite(fanPin, LOW);
 				system_states.FAN = 1;
 				save_states();
-			} 
+			}
 			else if (in_buffer[2] == '0') // Set Fan Off
 			{
 				if (loud) Serial.println("OFF.");
@@ -295,93 +214,12 @@ void process_buffer(bool loud = false)
 				Serial.println("\n\r\n\r>>> Error in process_buffer. sl.");
 			}
 		} // end Set Light
-		else if (in_buffer[1] == 'b') // Set Base servo
-		{
-			if (loud) Serial.println("BASE Servo: ");
-			char tmp_val[3];
-			tmp_val[0] = in_buffer[2];
-			tmp_val[1] = in_buffer[3];
-			tmp_val[2] = in_buffer[4];
-			short unsigned int servo_deg = atoi(tmp_val);
-			if (loud) {
-				Serial.println(servo_deg);
-			}
-			if (servo_deg >= 0 && servo_deg <= system_settings.BASE_RANGE)
-			{
-				if (loud) Serial.println("Sending to servo.");
-				short unsigned int pulselen = map(servo_deg, 0, system_settings.BASE_RANGE, system_settings.BASE_MIN, system_settings.BASE_MAX);
-				short unsigned int from_pulse = map(system_states.BASE_POS, 0, system_settings.BASE_RANGE, system_settings.BASE_MIN, system_settings.BASE_MAX);
-				slow_pwm(0, from_pulse, pulselen);
-				system_states.BASE_POS = servo_deg;
-				save_states();
-			} else {
-				Serial.println("\n\r\n\r>>> Error in process_buffer. sb.");
-			}
-		} // end Set Base
-		else if (in_buffer[1] == 'u') // Set SHDR servo
-		{
-			if (loud) Serial.println("SHDR Servo: ");
-			char tmp_val[3];
-			tmp_val[0] = in_buffer[2];
-			tmp_val[1] = in_buffer[3];
-			tmp_val[2] = in_buffer[4];
-			short unsigned int servo_deg = atoi(tmp_val);
-			if (loud) {
-				Serial.println(servo_deg);
-			}
-			if (servo_deg >= 0 && servo_deg <= system_settings.SHDR_RANGE)
-			{
-				if (loud) Serial.println("Sending to servo.");
-				short unsigned int pulselen = map(servo_deg, 0, system_settings.SHDR_RANGE, system_settings.SHDR_MIN, system_settings.SHDR_MAX);
-				short unsigned int from_pulse = map(system_states.SHDR_POS, 0, system_settings.SHDR_RANGE, system_settings.SHDR_MIN, system_settings.SHDR_MAX);
-				slow_pwm(1, from_pulse, pulselen);
-				system_states.SHDR_POS = servo_deg;
-				save_states();
-			} else {
-				Serial.println("\n\r\n\r>>> Error in process_buffer. su.");
-			}
-		} // end Set SHDR
-		else if (in_buffer[1] == 'e') // Set ELBO servo
-		{
-			if (loud) Serial.println("ELBO Servo: ");
-			char tmp_val[3];
-			tmp_val[0] = in_buffer[2];
-			tmp_val[1] = in_buffer[3];
-			tmp_val[2] = in_buffer[4];
-			short unsigned int servo_deg = atoi(tmp_val);
-			if (loud) {
-				Serial.println(servo_deg);
-			}
-			if (servo_deg >= 0 && servo_deg <= system_settings.ELBO_RANGE)
-			{
-				if (loud) Serial.println("Sending to servo.");
-				short unsigned int pulselen = map(servo_deg, 0, system_settings.ELBO_RANGE, system_settings.ELBO_MIN, system_settings.ELBO_MAX);
-				short unsigned int from_pulse = map(system_states.ELBOW_POS, 0, system_settings.ELBO_RANGE, system_settings.ELBO_MIN, system_settings.ELBO_MAX);
-				slow_pwm(2, from_pulse, pulselen);
-				system_states.ELBOW_POS = servo_deg;
-				save_states();
-			} else {
-				Serial.println("\n\r\n\r>>> Error in process_buffer. se.");
-			}
-		} // end Set ELBO
-		else if (in_buffer[1] == 'd') // Set pwm delay
-		{
-			if (loud) Serial.println("PWM Delay: ");
-			char tmp_val[3];
-			tmp_val[0] = in_buffer[2];
-			tmp_val[1] = in_buffer[3];
-			tmp_val[2] = in_buffer[4];
-			short unsigned int newDelay = atoi(tmp_val);
-			if (loud) Serial.println(newDelay);
-			system_settings.PWM_DELAY = newDelay;
-			save_states();
-		} // end Set pwm delay
 		else // Set undefined
 		{
 			Serial.println("\n\r\n\r>>> Error in process_buffer. s.");
 		}
 	} // end Set
-	
+
 	else if (in_buffer[0] == 'g') // Get
 	{
 		if (in_buffer[1] == 'f') // Get Fan
@@ -429,36 +267,15 @@ void process_buffer(bool loud = false)
 				Serial.println(humidity);
 			}
 		} // end Get Humidity
-		else if (in_buffer[1] == 'b') // Get BASE
-		{
-			Serial.println(system_states.BASE_POS);
-		}
-		else if (in_buffer[1] == 'u') // Get SHDR
-		{
-			Serial.println(system_states.SHDR_POS);
-		}
-		else if (in_buffer[1] == 'e') // Get ELBO
-		{
-			Serial.println(system_states.ELBOW_POS);
-		}
-		else if (in_buffer[1] == 'd') // Get pwm delay
-		{
-			Serial.println(system_settings.PWM_DELAY);
-		}
 		else // Get Undefined
 		{
 			Serial.println("\n\r\n\r>>> Error in process_buffer. g.");
 		}
 	} // end Get
-	
+
 	else if (in_buffer[0] == 'l') // Load default
 	{
-		if (in_buffer[1] == 'e') // Load default settings
-		{
-			system_settings = default_settings;
-			save_settings();
-		}
-		else if (in_buffer[1] == 'a') // Load default states
+		if (in_buffer[1] == 'a') // Load default states
 		{
 			system_states = default_states;
 			save_states();
@@ -468,7 +285,7 @@ void process_buffer(bool loud = false)
 			Serial.println("\n\r\n\r>>> Error in process_buffer. l.");
 		}
 	} // end Load
-	
+
 	reset_buffer();
 } // end process_buffer()
 
@@ -482,7 +299,7 @@ void loop()
 			Serial.println(":cmd or [cmd]");
 			Serial.println("[servo 111] - [fan on/off][fo][fi] - [hum][humv][h][hv] - [temp][tempv][t][tv]");
 		}
-		
+
 		switch (input_state) {
 			case 0: /* State 0: disregard input */
 				if (in_char == ':') {
@@ -541,11 +358,3 @@ void loop()
 		in_char = '\0';
 	} // End if Serial.available
 } // end loop()
-
-
-
-
-
-
-
-
