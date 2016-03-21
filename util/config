@@ -21,7 +21,7 @@ BAR_FORWARD=035
 BAR_PUSH=080
 
 # Declare that the dotdir is just in the same parent directory
-CB_DOTDIR=$CB_DIR/../.cerealbox
+CB_DOTDIR=$CB_DIR/../.cerealbot
 
 # Source API keys from somewhere not sent to github
 . "$CB_DOTDIR/apis"
