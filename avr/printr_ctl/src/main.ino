@@ -35,6 +35,17 @@
  *
  */
 
+ /**
+  * Pin Mappings
+  */
+ unsigned short int fanPin = 3; // Relay trigger for hotbed fans
+ unsigned short int lightPin = 4; // Relay trigger for lights
+ unsigned short int plasticPin = A2; // Filament detector
+ unsigned short int humPin = A0; // Humidity sensor
+ unsigned short int tempPin = A1; // Temperature sensor
+ unsigned short int ledPosPin = 12; // LED sensor positive pin
+ unsigned short int ledNegPin = 11; // LED sensor negative pin
+
 /**
  * Definitions
  */
@@ -44,6 +55,8 @@ const unsigned int STATES_ADDR = 0;
 typedef struct {
 	unsigned int LEDMIN;
 	unsigned int LEDMAX;
+	unsigned int LEDTHRESHOLD;
+	boolean LEDAUTO;
 	boolean FAN;
 	boolean LIGHT;
 } states;
@@ -52,8 +65,10 @@ typedef struct {
 states system_states;
 
 states default_states = {
-	2556,
+	30000,
 	0,
+	500,
+	1,
 	0,
 	1
 };
@@ -65,21 +80,13 @@ char in_char = '\0';
 char in_buffer[BUF_LEN+1];
 unsigned short buffer_index = 0;
 short int input_state = 0; // Current state for reading serial input.
+LedSensor led_sensor(ledPosPin, ledNegPin);
 
 /* Serial State Machine
  * 0: Out of state, discard. ':' -> go to 1.
  * 1: Record command. '\n' -> go to 2.
  * 2: Process command and go to 0.
  */
-
-/**
- * Pin Mappings
- */
-unsigned short int fanPin = 3; // Relay trigger for hotbed fans
-unsigned short int lightPin = 4; // Relay trigger for lights
-unsigned short int plasticPin = A2; // Filament detector
-unsigned short int humPin = A0; // Humidity sensor
-unsigned short int tempPin = A1; // Temperature sensor
 
 /**
  * Function prototypes
@@ -126,12 +133,23 @@ void reset_buffer ()
 
 void save_states ()
 {
+	system_states.LEDMAX = led_sensor.getMax();
+	system_states.LEDMIN = led_sensor.getMin();
 	EEPROM.put(STATES_ADDR, system_states);
 }
 
 void load_states ()
 {
 	EEPROM.get(STATES_ADDR, system_states);
+	led_sensor.setMax(system_states.LEDMAX);
+	led_sensor.setMin(system_states.LEDMIN);
+}
+
+void set_light(bool val)
+{
+	digitalWrite(lightPin, !val);
+	system_states.LIGHT = val;
+	save_states();
 }
 
 void process_buffer(bool loud = false)
@@ -142,7 +160,46 @@ void process_buffer(bool loud = false)
 	}
 	if (in_buffer[0] == 's') // Set
 	{
-		if (in_buffer[1] == 'f') // Set Fan
+		if (in_buffer[1] == 's') // Set sensor
+		{
+			char tmp_buf[4];
+      tmp_buf[0] = in_buffer[3];
+      tmp_buf[1] = in_buffer[4];
+      tmp_buf[2] = in_buffer[5];
+			tmp_buf[3] = in_buffer[6];
+      unsigned int tmp_int = atoi(tmp_buf);
+			if (in_buffer[2] == 'n') // Set sensor min
+			{
+				led_sensor.setMin(tmp_int);
+				save_states();
+			}
+			else if (in_buffer[2] == 'x') // Set sensor max
+			{
+				led_sensor.setMax(tmp_int);
+				save_states();
+			}
+			else if (in_buffer[2] == 't') // Set sensor threshold
+			{
+				system_states.LEDTHRESHOLD = tmp_int;
+				save_states();
+			}
+			else if (in_buffer[2] == 'a') // Set sensor Toggle Autotoggle
+			{
+				if (system_states.LEDAUTO == 1)
+				{
+					system_states.LEDAUTO = 0;
+				} else {
+					system_states.LEDAUTO = 1;
+				}
+				save_states();
+			}
+			else if (in_buffer[2] == 'c') // Set sensor calibrate
+			{
+				led_sensor.calibrate();
+				save_states();
+			}
+		}
+		else if (in_buffer[1] == 'f') // Set Fan
 		{
 			if (loud) Serial.print("Turning fan: ");
 			if (in_buffer[2] == '1') // Set Fan On
@@ -184,16 +241,12 @@ void process_buffer(bool loud = false)
 			if (in_buffer[2] == '1') // Set Light On
 			{
 				if (loud) Serial.println("ON.");
-				digitalWrite(lightPin, LOW);
-				system_states.LIGHT = 1;
-				save_states();
+				set_light(false);
 			}
 			else if (in_buffer[2] == '0') // Set Light Off
 			{
 				if (loud) Serial.println("OFF.");
-				digitalWrite(lightPin, HIGH);
-				system_states.LIGHT = 0;
-				save_states();
+				set_light(true);
 			}
 			else if (in_buffer[2] == 't') // Set Light Toggle
 			{
@@ -222,7 +275,26 @@ void process_buffer(bool loud = false)
 
 	else if (in_buffer[0] == 'g') // Get
 	{
-		if (in_buffer[1] == 'f') // Get Fan
+		if (in_buffer[1] == 's') // Get Sensor
+		{
+			if (in_buffer[2] == 'n') // Get Sensor Min
+			{
+				Serial.println(system_states.LEDMIN);
+			}
+			else if (in_buffer[2] == 'x') // Get Sensor Max
+			{
+				Serial.println(system_states.LEDMAX);
+			}
+			if (in_buffer[2] == 't') // Get Sensor Threshold
+			{
+				Serial.println(system_states.LEDTHRESHOLD);
+			}
+			if (in_buffer[2] == 'a') // Get Sensor AutoToggle
+			{
+				Serial.println(system_states.LEDAUTO);
+			}
+		}
+		else if (in_buffer[1] == 'f') // Get Fan
 		{
 			short unsigned int fanState = digitalRead(fanPin);
 			if (fanState == 1) {
@@ -291,6 +363,14 @@ void process_buffer(bool loud = false)
 
 void loop()
 {
+	if (!system_states.LIGHT && led_sensor.readCalibrated() < system_states.LEDTHRESHOLD)
+	{
+		set_light(true);
+	}
+	else if (system_states.LIGHT && led_sensor.readCalibrated() >= system_states.LEDTHRESHOLD)
+	{
+		set_light(false);
+	}
 	if (Serial.available())
 	{
 		in_char = Serial.read();
