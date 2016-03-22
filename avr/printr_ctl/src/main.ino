@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include <EEPROM.h>
+#include <Timer.h> /* pio install 75 */
 
 // http://davidegironi.blogspot.com/2013/07/amt1001-humidity-and-temperature-sensor.html
 #include "amt1001_ino.h"
@@ -81,6 +82,7 @@ char in_buffer[BUF_LEN+1];
 unsigned short buffer_index = 0;
 short int input_state = 0; // Current state for reading serial input.
 LedSensor led_sensor(ledPosPin, ledNegPin);
+Timer timer;
 
 /* Serial State Machine
  * 0: Out of state, discard. ':' -> go to 1.
@@ -120,6 +122,22 @@ void setup()
 	//Serial.println("ATmega reset");
 
 	delay(50);
+  timer.every(5000, ledToggle);
+}
+
+void ledToggle()
+{
+  if (system_states.LEDAUTO)
+  {
+    if (!system_states.LIGHT && led_sensor.read() >= system_states.LEDTHRESHOLD)
+  	{
+  		set_light(true);
+  	}
+  	else if (system_states.LIGHT && led_sensor.read() < system_states.LEDTHRESHOLD)
+  	{
+  		set_light(false);
+  	}
+  }
 }
 
 void reset_buffer ()
@@ -371,17 +389,7 @@ void process_buffer(bool loud = false)
 
 void loop()
 {
-  if (system_states.LEDAUTO)
-  {
-    if (!system_states.LIGHT && led_sensor.read() >= system_states.LEDTHRESHOLD)
-  	{
-  		set_light(true);
-  	}
-  	else if (system_states.LIGHT && led_sensor.read() < system_states.LEDTHRESHOLD)
-  	{
-  		set_light(false);
-  	}
-  }
+  timer.update();
 	if (Serial.available())
 	{
 		in_char = Serial.read();
