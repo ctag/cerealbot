@@ -367,14 +367,17 @@ void process_buffer(bool loud = false)
 
 void loop()
 {
-	if (!system_states.LIGHT && led_sensor.readCalibrated() < system_states.LEDTHRESHOLD)
-	{
-		set_light(true);
-	}
-	else if (system_states.LIGHT && led_sensor.readCalibrated() >= system_states.LEDTHRESHOLD)
-	{
-		set_light(false);
-	}
+  if (system_states.LEDAUTO)
+  {
+    if (!system_states.LIGHT && led_sensor.readCalibrated() < system_states.LEDTHRESHOLD)
+  	{
+  		set_light(true);
+  	}
+  	else if (system_states.LIGHT && led_sensor.readCalibrated() >= system_states.LEDTHRESHOLD)
+  	{
+  		set_light(false);
+  	}
+  }
 	if (Serial.available())
 	{
 		in_char = Serial.read();
