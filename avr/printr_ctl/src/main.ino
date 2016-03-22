@@ -285,13 +285,17 @@ void process_buffer(bool loud = false)
 			{
 				Serial.println(system_states.LEDMAX);
 			}
-			if (in_buffer[2] == 't') // Get Sensor Threshold
+			else if (in_buffer[2] == 't') // Get Sensor Threshold
 			{
 				Serial.println(system_states.LEDTHRESHOLD);
 			}
-			if (in_buffer[2] == 'a') // Get Sensor AutoToggle
+			else if (in_buffer[2] == 'a') // Get Sensor AutoToggle
 			{
 				Serial.println(system_states.LEDAUTO);
+			}
+      else if (in_buffer[2] == 'v') // Get Sensor Value
+			{
+				Serial.println(led_sensor.readCalibrated());
 			}
 		}
 		else if (in_buffer[1] == 'f') // Get Fan
