@@ -297,6 +297,10 @@ void process_buffer(bool loud = false)
 			{
 				Serial.println(led_sensor.readCalibrated());
 			}
+      else if (in_buffer[2] == 'r') // Get Sensor Raw
+			{
+				Serial.println(led_sensor.read());
+			}
 		}
 		else if (in_buffer[1] == 'f') // Get Fan
 		{
@@ -369,11 +373,11 @@ void loop()
 {
   if (system_states.LEDAUTO)
   {
-    if (!system_states.LIGHT && led_sensor.readCalibrated() < system_states.LEDTHRESHOLD)
+    if (!system_states.LIGHT && led_sensor.read() < system_states.LEDTHRESHOLD)
   	{
   		set_light(true);
   	}
-  	else if (system_states.LIGHT && led_sensor.readCalibrated() >= system_states.LEDTHRESHOLD)
+  	else if (system_states.LIGHT && led_sensor.read() >= system_states.LEDTHRESHOLD)
   	{
   		set_light(false);
   	}
