@@ -373,11 +373,11 @@ void loop()
 {
   if (system_states.LEDAUTO)
   {
-    if (!system_states.LIGHT && led_sensor.read() < system_states.LEDTHRESHOLD)
+    if (!system_states.LIGHT && led_sensor.read() >= system_states.LEDTHRESHOLD)
   	{
   		set_light(true);
   	}
-  	else if (system_states.LIGHT && led_sensor.read() >= system_states.LEDTHRESHOLD)
+  	else if (system_states.LIGHT && led_sensor.read() < system_states.LEDTHRESHOLD)
   	{
   		set_light(false);
   	}
