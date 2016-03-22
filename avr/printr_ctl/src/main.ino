@@ -241,12 +241,12 @@ void process_buffer(bool loud = false)
 			if (in_buffer[2] == '1') // Set Light On
 			{
 				if (loud) Serial.println("ON.");
-				set_light(false);
+				set_light(true);
 			}
 			else if (in_buffer[2] == '0') // Set Light Off
 			{
 				if (loud) Serial.println("OFF.");
-				set_light(true);
+				set_light(false);
 			}
 			else if (in_buffer[2] == 't') // Set Light Toggle
 			{
