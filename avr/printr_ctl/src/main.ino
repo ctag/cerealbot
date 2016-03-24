@@ -68,7 +68,7 @@ states system_states;
 states default_states = {
 	30000,
 	0,
-	500,
+	350,
 	1,
 	0,
 	1
@@ -122,7 +122,7 @@ void setup()
 	//Serial.println("ATmega reset");
 
 	delay(50);
-  timer.every(5000, ledToggle);
+  timer.every(15000, ledToggle);
 }
 
 void ledToggle()
