@@ -5,7 +5,6 @@
 
 // http://davidegironi.blogspot.com/2013/07/amt1001-humidity-and-temperature-sensor.html
 #include "amt1001_ino.h"
-#include "LedSensor.h"
 
 /**
  * Cerealbot Arduino
@@ -39,13 +38,12 @@
  /**
   * Pin Mappings
   */
- unsigned short int fanPin = 3; // Relay trigger for hotbed fans
- unsigned short int lightPin = 4; // Relay trigger for lights
- unsigned short int plasticPin = A2; // Filament detector
- unsigned short int humPin = A0; // Humidity sensor
- unsigned short int tempPin = A1; // Temperature sensor
- unsigned short int ledPosPin = 12; // LED sensor positive pin
- unsigned short int ledNegPin = 11; // LED sensor negative pin
+ unsigned short int pinFanRelay = 3; // Relay trigger for hotbed fans
+ unsigned short int pinLightRelay = 4; // Relay trigger for lights
+ unsigned short int pinPlasticSensor = 5; // Filament detector
+ unsigned short int pinHumSensor = A0; // Humidity sensor
+ unsigned short int pinTempSensor = A1; // Temperature sensor
+ unsigned short int pinLightSensor = A2; // Photoresistor
 
 /**
  * Definitions
@@ -81,7 +79,6 @@ char in_char = '\0';
 char in_buffer[BUF_LEN+1];
 unsigned short buffer_index = 0;
 short int input_state = 0; // Current state for reading serial input.
-LedSensor led_sensor(ledPosPin, ledNegPin);
 Timer timer;
 
 /* Serial State Machine
@@ -98,21 +95,22 @@ void reset_buffer ();
 void setup()
 {
 	load_states();
-	pinMode(fanPin, OUTPUT);
-	pinMode(lightPin, OUTPUT);
+	pinMode(pinFanRelay, OUTPUT);
+	pinMode(pinLightRelay, OUTPUT);
 	if (system_states.FAN == 1) {
-		digitalWrite(fanPin, LOW);
+		digitalWrite(pinFanRelay, LOW);
 	} else {
-		digitalWrite(fanPin, HIGH);
+		digitalWrite(pinFanRelay, HIGH);
 	}
 	if (system_states.LIGHT == 1) {
-		digitalWrite(lightPin, LOW);
+		digitalWrite(pinLightRelay, LOW);
 	} else {
-		digitalWrite(lightPin, HIGH);
+		digitalWrite(pinLightRelay, HIGH);
 	}
 
-	pinMode(humPin, INPUT);
-	pinMode(tempPin, INPUT);
+	pinMode(pinHumSensor, INPUT);
+	pinMode(pinTempSensor, INPUT);
+  pinMode(pinPlasticSensor, INPUT_PULLUP);
 
 	Serial.begin(9600);
 
@@ -129,11 +127,11 @@ void ledToggle()
 {
   if (system_states.LEDAUTO)
   {
-    if (!system_states.LIGHT && led_sensor.read() >= system_states.LEDTHRESHOLD)
+    if (!system_states.LIGHT && analogRead(pinPlasticSensor) >= system_states.LEDTHRESHOLD)
   	{
   		set_light(true);
   	}
-  	else if (system_states.LIGHT && led_sensor.read() < system_states.LEDTHRESHOLD)
+  	else if (system_states.LIGHT && analogRead(pinPlasticSensor) < system_states.LEDTHRESHOLD)
   	{
   		set_light(false);
   	}
@@ -151,21 +149,17 @@ void reset_buffer ()
 
 void save_states ()
 {
-	system_states.LEDMAX = led_sensor.getMax();
-	system_states.LEDMIN = led_sensor.getMin();
 	EEPROM.put(STATES_ADDR, system_states);
 }
 
 void load_states ()
 {
 	EEPROM.get(STATES_ADDR, system_states);
-	led_sensor.setMax(system_states.LEDMAX);
-	led_sensor.setMin(system_states.LEDMIN);
 }
 
 void set_light(bool val)
 {
-	digitalWrite(lightPin, !val);
+	digitalWrite(pinLightRelay, !val);
 	system_states.LIGHT = val;
 	save_states();
 }
@@ -186,17 +180,7 @@ void process_buffer(bool loud = false)
       tmp_buf[2] = in_buffer[5];
 			tmp_buf[3] = in_buffer[6];
       unsigned int tmp_int = atoi(tmp_buf);
-			if (in_buffer[2] == 'n') // Set sensor min
-			{
-				led_sensor.setMin(tmp_int);
-				save_states();
-			}
-			else if (in_buffer[2] == 'x') // Set sensor max
-			{
-				led_sensor.setMax(tmp_int);
-				save_states();
-			}
-			else if (in_buffer[2] == 't') // Set sensor threshold
+			if (in_buffer[2] == 't') // Set sensor threshold
 			{
 				system_states.LEDTHRESHOLD = tmp_int;
 				save_states();
@@ -211,11 +195,6 @@ void process_buffer(bool loud = false)
 				}
 				save_states();
 			}
-			else if (in_buffer[2] == 'c') // Set sensor calibrate
-			{
-				led_sensor.calibrate();
-				save_states();
-			}
 		}
 		else if (in_buffer[1] == 'f') // Set Fan
 		{
@@ -223,14 +202,14 @@ void process_buffer(bool loud = false)
 			if (in_buffer[2] == '1') // Set Fan On
 			{
 				if (loud) Serial.println("ON.");
-				digitalWrite(fanPin, LOW);
+				digitalWrite(pinFanRelay, LOW);
 				system_states.FAN = 1;
 				save_states();
 			}
 			else if (in_buffer[2] == '0') // Set Fan Off
 			{
 				if (loud) Serial.println("OFF.");
-				digitalWrite(fanPin, HIGH);
+				digitalWrite(pinFanRelay, HIGH);
 				system_states.FAN = 0;
 				save_states();
 			}
@@ -238,12 +217,12 @@ void process_buffer(bool loud = false)
 			{
 				if (system_states.FAN == 0) {
 					if (loud) Serial.println("ON.");
-					digitalWrite(fanPin, LOW);
+					digitalWrite(pinFanRelay, LOW);
 					system_states.FAN = 1;
 					save_states();
 				} else {
 					if (loud) Serial.println("OFF.");
-					digitalWrite(fanPin, HIGH);
+					digitalWrite(pinFanRelay, HIGH);
 					system_states.FAN = 0;
 					save_states();
 				}
@@ -270,12 +249,12 @@ void process_buffer(bool loud = false)
 			{
 				if (system_states.LIGHT == 0) {
 					if (loud) Serial.println("ON.");
-					digitalWrite(lightPin, LOW);
+					digitalWrite(pinLightRelay, LOW);
 					system_states.LIGHT = 1;
 					save_states();
 				} else {
 					if (loud) Serial.println("OFF.");
-					digitalWrite(lightPin, HIGH);
+					digitalWrite(pinLightRelay, HIGH);
 					system_states.LIGHT = 0;
 					save_states();
 				}
@@ -295,15 +274,7 @@ void process_buffer(bool loud = false)
 	{
 		if (in_buffer[1] == 's') // Get Sensor
 		{
-			if (in_buffer[2] == 'n') // Get Sensor Min
-			{
-				Serial.println(system_states.LEDMIN);
-			}
-			else if (in_buffer[2] == 'x') // Get Sensor Max
-			{
-				Serial.println(system_states.LEDMAX);
-			}
-			else if (in_buffer[2] == 't') // Get Sensor Threshold
+			if (in_buffer[2] == 't') // Get Sensor Threshold
 			{
 				Serial.println(system_states.LEDTHRESHOLD);
 			}
@@ -311,18 +282,10 @@ void process_buffer(bool loud = false)
 			{
 				Serial.println(system_states.LEDAUTO);
 			}
-      else if (in_buffer[2] == 'v') // Get Sensor Value
-			{
-				Serial.println(led_sensor.readCalibrated());
-			}
-      else if (in_buffer[2] == 'r') // Get Sensor Raw
-			{
-				Serial.println(led_sensor.read());
-			}
 		}
 		else if (in_buffer[1] == 'f') // Get Fan
 		{
-			short unsigned int fanState = digitalRead(fanPin);
+			short unsigned int fanState = digitalRead(pinFanRelay);
 			if (fanState == 1) {
 				Serial.println('0');
 			} else {
@@ -331,7 +294,7 @@ void process_buffer(bool loud = false)
 		} // end get fan
 		else if (in_buffer[1] == 'l') // Get Light
 		{
-			short unsigned int lightState = digitalRead(lightPin);
+			short unsigned int lightState = digitalRead(pinLightRelay);
 			if (lightState == 1) {
 				Serial.println('0');
 			} else {
@@ -342,11 +305,11 @@ void process_buffer(bool loud = false)
 		{
 			if (in_buffer[2] == 'v') // Get Temperature Value
 			{
-				Serial.println(analogRead(tempPin));
+				Serial.println(analogRead(pinTempSensor));
 			}
 			else // Get Temperature
 			{
-				uint16_t step = analogRead(tempPin);
+				uint16_t step = analogRead(pinTempSensor);
 				uint16_t temperature = amt1001_gettemperature(step);
 				Serial.println(temperature);
 			}
@@ -355,11 +318,11 @@ void process_buffer(bool loud = false)
 		{
 			if (in_buffer[2] == 'v') // Get Humidity Value
 			{
-				Serial.println(analogRead(humPin));
+				Serial.println(analogRead(pinHumSensor));
 			}
 			else // Get Temperature
 			{
-				int step = analogRead(humPin);
+				int step = analogRead(pinHumSensor);
 				double volt = (double)step * (5.0 / 1023.0);
 				uint16_t humidity = amt1001_gethumidity(volt);
 				Serial.println(humidity);
@@ -390,6 +353,11 @@ void process_buffer(bool loud = false)
 void loop()
 {
   timer.update();
+  if (digitalRead(pinPlasticSensor) == LOW)
+  {
+    Serial.println("!p0!");
+    while (digitalRead(pinPlasticSensor) == LOW) {}
+  }
 	if (Serial.available())
 	{
 		in_char = Serial.read();
