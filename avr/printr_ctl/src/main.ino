@@ -3,6 +3,10 @@
 #include <EEPROM.h>
 #include <Timer.h> /* pio install 75 */
 
+// Interrupts
+// #include <avr/io.h>
+// #include <avr/interrupt.h>
+
 // http://davidegironi.blogspot.com/2013/07/amt1001-humidity-and-temperature-sensor.html
 #include "amt1001_ino.h"
 
@@ -80,6 +84,7 @@ char in_buffer[BUF_LEN+1];
 unsigned short buffer_index = 0;
 short int input_state = 0; // Current state for reading serial input.
 Timer timer;
+// bool filament_alert = false;
 
 /* Serial State Machine
  * 0: Out of state, discard. ':' -> go to 1.
@@ -91,6 +96,7 @@ Timer timer;
  * Function prototypes
  */
 void reset_buffer ();
+void ledToggle ();
 
 void setup()
 {
@@ -121,7 +127,16 @@ void setup()
 
 	delay(50);
   timer.every(15000, ledToggle);
+
+  // Filament sensor
+  // attachInterrupt(0, filament_sensor_interrupt, RISING);
+  // interrupts();
 }
+
+// void filament_sensor_interrupt()
+// {
+//   filament_alert = true;
+// }
 
 void ledToggle()
 {
@@ -353,6 +368,7 @@ void process_buffer(bool loud = false)
 void loop()
 {
   timer.update();
+
   if (digitalRead(pinPlasticSensor) == LOW)
   {
     Serial.println("!p0!");
