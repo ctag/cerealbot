@@ -369,10 +369,12 @@ void loop()
 {
   timer.update();
 
-  if (digitalRead(pinPlasticSensor) == LOW)
+  if (digitalRead(pinPlasticSensor) == HIGH)
   {
     Serial.println("!p0!");
-    while (digitalRead(pinPlasticSensor) == LOW) {}
+    while (digitalRead(pinPlasticSensor) == HIGH) {
+      delay(1000);
+    }
   }
 	if (Serial.available())
 	{
