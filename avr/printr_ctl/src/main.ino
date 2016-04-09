@@ -142,11 +142,11 @@ void ledToggle()
 {
   if (system_states.LEDAUTO)
   {
-    if (!system_states.LIGHT && analogRead(pinPlasticSensor) >= system_states.LEDTHRESHOLD)
+    if (!system_states.LIGHT && analogRead(pinLightSensor) >= system_states.LEDTHRESHOLD)
   	{
   		set_light(true);
   	}
-  	else if (system_states.LIGHT && analogRead(pinPlasticSensor) < system_states.LEDTHRESHOLD)
+  	else if (system_states.LIGHT && analogRead(pinLightSensor) < system_states.LEDTHRESHOLD)
   	{
   		set_light(false);
   	}
@@ -296,6 +296,10 @@ void process_buffer(bool loud = false)
 			else if (in_buffer[2] == 'a') // Get Sensor AutoToggle
 			{
 				Serial.println(system_states.LEDAUTO);
+			}
+      else if (in_buffer[2] == 'v') // Get Sensor Value
+			{
+				Serial.println(analogRead(pinLightSensor));
 			}
 		}
 		else if (in_buffer[1] == 'f') // Get Fan
