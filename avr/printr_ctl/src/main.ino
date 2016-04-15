@@ -205,36 +205,43 @@ void process_buffer(bool loud = false)
         {
                 if (in_buffer[1] == 'd') // Set display
                 {
-                        char tmp_buf[21];
-                        for (short int i = 0; i < 20; i++)
+                        if (in_buffer[2] == 'r') // Set display refresh
                         {
-                                tmp_buf[i] = in_buffer[i+3];
-                                if (in_buffer[i+3] == '\0')
-                                        break;
-                        }
-                        tmp_buf[20] = '\0';
-                        if (in_buffer[2] == '0') // Set display line 0
-                        {
-                                lcdWriteLine(tmp_buf, 0);
-                        }
-                        else if (in_buffer[2] == '1') // Set display line 1
-                        {
-                                lcdWriteLine(tmp_buf, 1);
-                        }
-                        else if (in_buffer[2] == '2') // Set display line 2
-                        {
-                                lcdWriteLine(tmp_buf, 2);
-                        }
-                        else if (in_buffer[2] == '3') // Set display line 3
-                        {
-                                lcdWriteLine(tmp_buf, 3);
+                                lcdRefresh();
                         }
                         else
                         {
-                                process_buffer_error("sd");
-                                return;
+                            char tmp_buf[21];
+                            for (short int i = 0; i < 20; i++)
+                            {
+                                    tmp_buf[i] = in_buffer[i+3];
+                                    if (in_buffer[i+3] == '\0')
+                                            break;
+                            }
+                            tmp_buf[20] = '\0';
+                            if (in_buffer[2] == '0') // Set display line 0
+                            {
+                                    lcdWriteLine(tmp_buf, 0);
+                            }
+                            else if (in_buffer[2] == '1') // Set display line 1
+                            {
+                                    lcdWriteLine(tmp_buf, 1);
+                            }
+                            else if (in_buffer[2] == '2') // Set display line 2
+                            {
+                                    lcdWriteLine(tmp_buf, 2);
+                            }
+                            else if (in_buffer[2] == '3') // Set display line 3
+                            {
+                                    lcdWriteLine(tmp_buf, 3);
+                            }
+                            else
+                            {
+                                    process_buffer_error("sd");
+                                    return;
+                            }
+                            save_states();
                         }
-                        save_states();
                 }
                 else if (in_buffer[1] == 's') // Set sensor
                 {
