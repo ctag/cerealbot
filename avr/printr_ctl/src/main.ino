@@ -134,11 +134,11 @@ void ledToggle()
 {
         if (system_states.LEDAUTO)
         {
-                if (!system_states.LIGHT && analogRead(pinLightSensor) >= system_states.LEDTHRESHOLD)
+                if (!system_states.LIGHT && analogRead(pinLightSensor) <= system_states.LEDTHRESHOLD)
                 {
                         set_light(true);
                 }
-                else if (system_states.LIGHT && analogRead(pinLightSensor) < system_states.LEDTHRESHOLD)
+                else if (system_states.LIGHT && analogRead(pinLightSensor) > system_states.LEDTHRESHOLD)
                 {
                         set_light(false);
                 }
